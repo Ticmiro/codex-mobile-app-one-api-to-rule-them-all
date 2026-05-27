@@ -271,7 +271,7 @@ The bridge therefore supports:
 codex.desktop.restart
 ```
 
-The mobile `Codex Chat` screen exposes this as `Refresh Desktop`. It is a controlled close-and-reopen of Codex Desktop on the Windows PC that owns the bridge.
+The mobile `Codex Chat` screen exposes this as `Refresh Desktop`. It is a controlled close-and-reopen of Codex Desktop on the Windows PC that owns the bridge. The `Refresh TicProxy` button beside `API ONE KEY` only reloads the TicProxy management status; it does not restart Desktop.
 
 Optional `.env.local` values:
 

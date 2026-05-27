@@ -177,7 +177,7 @@ Get-StartApps | Where-Object { $_.Name -match 'Codex|OpenAI' }
 Rồi thêm vào `.env.local`:
 
 ```env
-TICMIRO_CODEX_DESKTOP_RESTART_COMMAND=Get-Process -Name Codex,codex -ErrorAction SilentlyContinue | Stop-Process -Force; Start-Sleep -Milliseconds 1200; Start-Process 'shell:AppsFolder\OpenAI.Codex_2p2nqsd0c76g0!App'
+TICMIRO_CODEX_DESKTOP_RESTART_COMMAND=Get-Process -Name Codex,codex -ErrorAction SilentlyContinue | Stop-Process -Force; Start-Sleep -Milliseconds 1200; Start-Process explorer.exe 'shell:AppsFolder\OpenAI.Codex_2p2nqsd0c76g0!App'
 ```
 
 Bridge bản mới cũng tự thử `Get-StartApps` nếu không tìm thấy `.exe` hoặc shortcut.

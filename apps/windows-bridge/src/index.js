@@ -818,16 +818,31 @@ function desktopRestartScript() {
 $ErrorActionPreference = "SilentlyContinue"
 $Killed = @()
 $Started = ""
+$StartAttempt = ""
 
-$Processes = Get-CimInstance Win32_Process | Where-Object {
-  (($_.Name -match "Codex|OpenAI") -or ($_.CommandLine -match "Codex|OpenAI\.Codex")) -and
-  ($_.ProcessId -ne $PID) -and
-  ($_.CommandLine -notmatch "apps\\windows-bridge\\src\\index\.js") -and
-  ($_.CommandLine -notmatch "apps/windows-bridge/src/index\.js") -and
-  ($_.CommandLine -notmatch "codex-mobile-app-one-api-to-rule-them-all") -and
-  ($_.CommandLine -notmatch "\bcodex(\.exe)?\s+app-server\b") -and
-  ($_.CommandLine -notmatch "\bcodex(\.exe)?\s+exec\b")
+function Get-CodexDesktopProcesses {
+  Get-CimInstance Win32_Process | Where-Object {
+    (($_.Name -match "Codex|OpenAI") -or ($_.CommandLine -match "Codex|OpenAI\.Codex")) -and
+    ($_.ProcessId -ne $PID) -and
+    ($_.CommandLine -notmatch "apps\\windows-bridge\\src\\index\.js") -and
+    ($_.CommandLine -notmatch "apps/windows-bridge/src/index\.js") -and
+    ($_.CommandLine -notmatch "codex-mobile-app-one-api-to-rule-them-all") -and
+    ($_.CommandLine -notmatch "\bcodex(\.exe)?\s+app-server\b") -and
+    ($_.CommandLine -notmatch "\bcodex(\.exe)?\s+exec\b")
+  }
 }
+
+function Wait-CodexDesktopProcess {
+  $Deadline = (Get-Date).AddSeconds(8)
+  do {
+    $Found = @(Get-CodexDesktopProcesses)
+    if ($Found.Count -gt 0) { return $Found }
+    Start-Sleep -Milliseconds 500
+  } while ((Get-Date) -lt $Deadline)
+  return @()
+}
+
+$Processes = Get-CodexDesktopProcesses
 foreach ($Process in $Processes) {
   try {
     Stop-Process -Id $Process.ProcessId -Force
@@ -836,6 +851,21 @@ foreach ($Process in $Processes) {
 }
 
 Start-Sleep -Milliseconds 900
+
+function Try-StartPath($Target) {
+  if (-not $Target) { return $false }
+  try {
+    if ($Target -match '^shell:') {
+      Start-Process -FilePath "explorer.exe" -ArgumentList $Target
+    } else {
+      Start-Process -FilePath $Target
+    }
+    $script:Started = $Target
+    return $true
+  } catch {
+    return $false
+  }
+}
 
 $Candidates = @(
   $env:TICMIRO_CODEX_DESKTOP_BIN,
@@ -847,8 +877,8 @@ $Candidates = @(
 ) | Where-Object { $_ -and (Test-Path -LiteralPath $_) }
 
 if ($Candidates.Count -gt 0) {
-  Start-Process -FilePath $Candidates[0]
-  $Started = $Candidates[0]
+  $StartAttempt = $Candidates[0]
+  [void](Try-StartPath $Candidates[0])
 } else {
   $StartFolders = @(
     (Join-Path $env:APPDATA "Microsoft\Windows\Start Menu\Programs"),
@@ -858,8 +888,8 @@ if ($Candidates.Count -gt 0) {
     ForEach-Object { Get-ChildItem -LiteralPath $_ -Recurse -Filter "*Codex*.lnk" -ErrorAction SilentlyContinue } |
     Select-Object -First 1
   if ($Link) {
-    Start-Process -FilePath $Link.FullName
-    $Started = $Link.FullName
+    $StartAttempt = $Link.FullName
+    [void](Try-StartPath $Link.FullName)
   }
 }
 
@@ -869,8 +899,8 @@ if (-not $Started) {
     Select-Object -First 1
   if ($CodexApp) {
     $AppTarget = "shell:AppsFolder\$($CodexApp.AppID)"
-    Start-Process $AppTarget
-    $Started = $AppTarget
+    $StartAttempt = $AppTarget
+    [void](Try-StartPath $AppTarget)
   }
 }
 
@@ -879,7 +909,13 @@ if (-not $Started) {
   exit 2
 }
 
-Write-Output (@{ ok = $true; killed = $Killed; started = $Started; error = "" } | ConvertTo-Json -Compress)
+$StartedProcesses = @(Wait-CodexDesktopProcess)
+if ($StartedProcesses.Count -eq 0) {
+  Write-Output (@{ ok = $false; killed = $Killed; started = $Started; startAttempt = $StartAttempt; error = "Launcher was invoked but no Codex Desktop process appeared. Set TICMIRO_CODEX_DESKTOP_RESTART_COMMAND to the exact AppX/AppID launcher." } | ConvertTo-Json -Compress)
+  exit 3
+}
+
+Write-Output (@{ ok = $true; killed = $Killed; started = $Started; startAttempt = $StartAttempt; processCount = $StartedProcesses.Count; error = "" } | ConvertTo-Json -Compress)
 exit 0
 `;
 }
@@ -927,6 +963,8 @@ async function restartCodexDesktop(payload = {}) {
     method: 'windows-discovery',
     killed: parsed.killed || [],
     started: parsed.started || '',
+    startAttempt: parsed.startAttempt || '',
+    processCount: parsed.processCount || 0,
     summary: result.code === 0 && parsed.ok !== false
       ? 'Codex Desktop restarted.'
       : (parsed.error || 'Codex Desktop restart failed.'),
@@ -1540,6 +1578,8 @@ async function handleCommand(command) {
         method: result.method,
         killed: result.killed || [],
         started: result.started || '',
+        startAttempt: result.startAttempt || '',
+        processCount: result.processCount || 0,
         stdout: String(result.stdout || '').trim().slice(-4000),
         stderr: String(result.stderr || '').trim().slice(-2000),
         summary: result.summary,
