@@ -120,7 +120,7 @@ env_key = "TICPROXY_API_KEY"
 wire_api = "responses"
 ```
 
-Nếu Windows bridge đang online, cách nhanh nhất là vào `TicProxy -> API ONE KEY` trên mobile. Bridge sẽ backup `config.toml`, ghi block `model_providers.ticproxy`, đặt `model_provider = "ticproxy"` và lưu `TICPROXY_API_KEY` vào Windows User env.
+Nếu Windows bridge đang online, cách nhanh nhất là vào `TicProxy -> API ONE KEY` trên mobile. Bridge sẽ backup `config.toml`, ghi block `model_providers.ticproxy`, đặt `model_provider = "ticproxy"` và lưu `TICPROXY_API_KEY` vào Windows User env. Khi UI báo `Đã cấu hình TicProxy xong`, user chủ động bấm `Refresh Desktop` để khởi động lại Codex Desktop và áp dụng cấu hình mới.
 
 Nếu Codex Desktop đang lỗi không chat được, chạy PowerShell:
 

@@ -164,7 +164,7 @@ The web app should also show:
 - `Codex Chat` tab: mode `PC Agent Codex CLI` can queue a prompt to the bridge.
 - `Codex Chat` tab: mode `Desktop Thread Sync` can list synced Codex Desktop threads and show recent transcript messages.
 - `Codex Chat` tab: button `Refresh Desktop` can reopen the Codex Desktop window through command `codex.desktop.restart`.
-- `TicProxy` tab: button `API ONE KEY` can configure Codex Desktop to use TicProxy through `config.toml`.
+- `TicProxy` tab: button `API ONE KEY` can configure Codex Desktop to use TicProxy through `config.toml`; the adjacent `Refresh Desktop` button is a separate user-triggered restart.
 - `Agent Command Queue`: command status changes from `pending` to `running`, then `completed` or `failed`.
 
 ## API ONE KEY
@@ -200,7 +200,7 @@ If `config.toml` already exists, the bridge creates a backup beside it:
 config.toml.bak-api-one-key-<timestamp>.toml
 ```
 
-On Windows, the bridge also persists `TICPROXY_BASE_URL` and `TICPROXY_API_KEY` in the current user's environment. Restart Codex Desktop or start a new Codex CLI process after running API ONE KEY so the new environment is picked up.
+On Windows, the bridge also persists `TICPROXY_BASE_URL` and `TICPROXY_API_KEY` in the current user's environment. API ONE KEY does not restart Desktop automatically. After the UI shows `Đã cấu hình TicProxy xong`, press `Refresh Desktop` or start a new Codex CLI process so the new environment is picked up.
 
 ## Agent command execution
 
@@ -271,7 +271,7 @@ The bridge therefore supports:
 codex.desktop.restart
 ```
 
-The mobile `Codex Chat` screen exposes this as `Refresh Desktop`. It is a controlled close-and-reopen of Codex Desktop on the Windows PC that owns the bridge. The `Refresh TicProxy` button beside `API ONE KEY` only reloads the TicProxy management status; it does not restart Desktop.
+The mobile `Codex Chat` screen exposes this as `Refresh Desktop`. The `TicProxy` screen exposes the same user-triggered action beside `API ONE KEY`. It is a controlled close-and-reopen of Codex Desktop on the Windows PC that owns the bridge. The `Refresh TicProxy` button only reloads the TicProxy management status; it does not restart Desktop.
 
 Optional `.env.local` values:
 

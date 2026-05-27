@@ -25,6 +25,7 @@ const els = {
   ticproxyStatusBtn: document.getElementById('ticproxyStatusBtn'),
   ticproxyApiOneKeyBtn: document.getElementById('ticproxyApiOneKeyBtn'),
   ticproxyApiOneKeyShortcutBtn: document.getElementById('ticproxyApiOneKeyShortcutBtn'),
+  ticproxyDesktopRefreshBtn: document.getElementById('ticproxyDesktopRefreshBtn'),
   ticproxyApiOneKeyStatus: document.getElementById('ticproxyApiOneKeyStatus'),
   ticproxyConnectionAccountSelect: document.getElementById('ticproxyConnectionAccountSelect'),
   ticproxyConnectionModelInput: document.getElementById('ticproxyConnectionModelInput'),
@@ -1415,7 +1416,7 @@ function renderTicProxy(ticproxy = {}, ticproxyApi = state.ticproxy) {
 function renderTicProxyApiOneKey(lastResult) {
   if (!els.ticproxyApiOneKeyStatus) return;
   if (lastResult?.type !== 'ticproxy.apiOneKey.configure') {
-    els.ticproxyApiOneKeyStatus.textContent = 'API ONE KEY sẽ tự cấu hình Codex Desktop dùng TicProxy qua Windows bridge.';
+    els.ticproxyApiOneKeyStatus.textContent = 'API ONE KEY sẽ tự cấu hình Codex Desktop dùng TicProxy. Sau khi hoàn tất, bấm Refresh Desktop để cấu hình có hiệu lực.';
     els.ticproxyApiOneKeyStatus.className = 'tm-oauth-status';
     return;
   }
@@ -1425,7 +1426,7 @@ function renderTicProxyApiOneKey(lastResult) {
   const backup = result.backupPath ? ` · backup ${result.backupPath}` : '';
   els.ticproxyApiOneKeyStatus.textContent = failed
     ? `API ONE KEY lỗi: ${lastResult.error || result.summary || 'Không cấu hình được Codex Desktop.'}`
-    : `${result.summary || lastResult.summary || 'API ONE KEY completed.'}${key}${backup}`;
+    : `Đã cấu hình TicProxy xong. Bấm Refresh Desktop để khởi động lại Codex và áp dụng cấu hình mới.${key}${backup}`;
   els.ticproxyApiOneKeyStatus.className = `tm-oauth-status ${failed ? 'bad' : 'ok'}`;
 }
 
@@ -1938,25 +1939,39 @@ els.saveTokenBtn.addEventListener('click', () => {
 els.refreshBtn.addEventListener('click', () => runQueued('snapshot.refresh', {}, { wait: true, polls: 10 }).catch((error) => toast(error.message, 'bad')));
 els.snapshotBtn.addEventListener('click', () => runQueued('snapshot.refresh').catch((error) => toast(error.message, 'bad')));
 els.ticproxyStatusBtn.addEventListener('click', () => runQueued('ticproxy.management.refresh', {}, { wait: true, group: 'ticproxy' }).catch((error) => toast(error.message, 'bad')));
-function runApiOneKeyConfigure() {
+async function runApiOneKeyConfigure() {
   if (els.ticproxyApiOneKeyStatus) {
     els.ticproxyApiOneKeyStatus.textContent = 'Đang gửi yêu cầu API ONE KEY tới Windows bridge...';
     els.ticproxyApiOneKeyStatus.className = 'tm-oauth-status warn';
   }
-  runQueued('ticproxy.apiOneKey.configure', {
-    provider: 'ticproxy',
-    model: els.modelInput.value.trim() || 'gpt-5.5',
-    setDefault: true,
-  }, { wait: true, group: 'ticproxy', polls: 90 }).catch((error) => {
+  try {
+    await runQueued('ticproxy.apiOneKey.configure', {
+      provider: 'ticproxy',
+      model: els.modelInput.value.trim() || 'gpt-5.5',
+      setDefault: true,
+    }, { wait: true, group: 'ticproxy', polls: 90 });
+    if (els.ticproxyApiOneKeyStatus) {
+      els.ticproxyApiOneKeyStatus.textContent = 'Đã cấu hình TicProxy xong. Bấm Refresh Desktop để khởi động lại Codex và áp dụng cấu hình mới.';
+      els.ticproxyApiOneKeyStatus.className = 'tm-oauth-status ok';
+    }
+    toast('Đã cấu hình TicProxy xong. Bấm Refresh Desktop để áp dụng.', 'ok');
+  } catch (error) {
     if (els.ticproxyApiOneKeyStatus) {
       els.ticproxyApiOneKeyStatus.textContent = `API ONE KEY lỗi: ${error.message}`;
       els.ticproxyApiOneKeyStatus.className = 'tm-oauth-status bad';
     }
     toast(error.message, 'bad');
-  });
+  }
+}
+function runDesktopRefresh(reason = 'manual-mobile-refresh') {
+  return runQueued('codex.desktop.restart', {
+    reason,
+    threadId: state.selectedThreadId || '',
+  }, { wait: true, group: 'codex-chat', polls: 30 });
 }
 els.ticproxyApiOneKeyBtn?.addEventListener('click', runApiOneKeyConfigure);
 els.ticproxyApiOneKeyShortcutBtn?.addEventListener('click', runApiOneKeyConfigure);
+els.ticproxyDesktopRefreshBtn?.addEventListener('click', () => runDesktopRefresh('ticproxy-refresh-desktop').catch((error) => toast(error.message, 'bad')));
 els.ticproxyConnectionTestBtn?.addEventListener('click', () => {
   const accountName = els.ticproxyConnectionAccountSelect?.value || '';
   const model = els.ticproxyConnectionModelInput?.value?.trim() || 'gpt-5.5';
@@ -1992,10 +2007,7 @@ els.threadDrawerTopBtn?.addEventListener('click', () => setThreadDrawer(true));
 els.threadDrawerCloseBtn?.addEventListener('click', () => setThreadDrawer(false));
 els.threadDrawerBackdrop?.addEventListener('click', () => setThreadDrawer(false));
 els.threadRefreshBtn.addEventListener('click', () => runQueued('snapshot.refresh', {}, { wait: true }).catch((error) => toast(error.message, 'bad')));
-els.desktopRefreshBtn.addEventListener('click', () => runQueued('codex.desktop.restart', {
-  reason: 'manual-mobile-refresh',
-  threadId: state.selectedThreadId || '',
-}, { wait: true, group: 'codex-chat', polls: 30 }).catch((error) => toast(error.message, 'bad')));
+els.desktopRefreshBtn.addEventListener('click', () => runDesktopRefresh('manual-mobile-refresh').catch((error) => toast(error.message, 'bad')));
 els.threadReadBtn.addEventListener('click', () => {
   if (!state.selectedThreadId) return;
   runQueued('codex.thread.read', { threadId: state.selectedThreadId, limit: 120 }, { wait: true, group: 'codex-chat' }).catch((error) => toast(error.message, 'bad'));
