@@ -1,0 +1,492 @@
+<!doctype html>
+<html lang="vi" class="ticmiro">
+  <head>
+    <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+    <title>Ticmiro Mobile Control</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body data-active-tab="chat">
+    <main class="tm-workbench">
+      <aside class="tm-rail" aria-label="Ticmiro modules">
+        <div class="tm-rail-brand" title="Ticmiro.cloud" aria-label="Ticmiro.cloud">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 17.5h10.5a3.5 3.5 0 0 0 .7-6.93A5.5 5.5 0 0 0 6.63 8.1 4.75 4.75 0 0 0 6 17.5Z"/><path d="M8 13h8"/></svg>
+        </div>
+        <button class="tm-rail-item is-active" type="button" data-tab="chat" title="Codex Chat">
+          <span class="tm-rail-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/></svg></span>
+          <span class="tm-sr-only">Codex Chat</span>
+        </button>
+        <button class="tm-rail-item" type="button" data-tab="ticproxy" title="TicProxy">
+          <span class="tm-rail-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 18v-4a4 4 0 0 1 4-4h12"/><path d="M20 6v8"/><path d="m16 10 4 4 4-4"/><path d="M4 6h8"/><path d="M4 10h4"/></svg></span>
+          <span class="tm-sr-only">TicProxy</span>
+        </button>
+        <button class="tm-rail-item" type="button" data-tab="agent" title="Agent PC">
+          <span class="tm-rail-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 8V4H8"/><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M9 13h.01"/><path d="M15 13h.01"/><path d="M9 17h6"/></svg></span>
+          <span class="tm-sr-only">Agent PC</span>
+        </button>
+      </aside>
+
+      <section class="tm-main">
+        <header class="tm-commandbar">
+          <div class="tm-breadcrumb">
+            <span>Ticmiro.cloud</span>
+            <span>/</span>
+            <strong id="activeTitle">Codex Chat</strong>
+          </div>
+          <label class="tm-command-input">
+            <span>Token</span>
+            <input id="tokenInput" type="password" autocomplete="current-password" placeholder="CODEX_MOBILE_CONTROL_TOKEN">
+          </label>
+          <div class="tm-command-actions">
+            <button id="saveTokenBtn" class="tm-icon-command" type="button" title="Lưu token">Lưu</button>
+            <button id="refreshBtn" class="tm-icon-command" type="button" title="Đồng bộ">Sync</button>
+            <button id="threadDrawerTopBtn" class="tm-icon-command tm-thread-top-button" type="button" title="Danh sách phiên">Phiên</button>
+          </div>
+        </header>
+
+        <section id="toast" class="tm-toast" hidden></section>
+
+        <section class="tm-content">
+          <section class="tm-hero">
+            <div>
+              <div class="tm-kicker">Codex Mobile Control</div>
+              <h1>Ticmiro.cloud</h1>
+              <p id="subtitle">Codex CLI · TicProxy · Resident Agent</p>
+            </div>
+            <div class="tm-live-pill" id="livePill">offline</div>
+          </section>
+
+          <section class="tm-status-grid" aria-label="Runtime status">
+            <article class="tm-status-card" id="agentCard"></article>
+            <article class="tm-status-card" id="codexCard"></article>
+            <article class="tm-status-card" id="ticproxyCard"></article>
+            <article class="tm-status-card" id="residentCard"></article>
+          </section>
+
+          <section class="tm-tab" id="tab-dashboard">
+            <div class="tm-two-col">
+              <article class="tm-panel tm-panel-main">
+                <div class="tm-panel-head">
+                  <div>
+                    <h2>Recent Threads</h2>
+                    <p>Codex sessions</p>
+                  </div>
+                  <button id="snapshotBtn" type="button">Snapshot</button>
+                </div>
+                <div id="threads" class="tm-list"></div>
+              </article>
+              <article class="tm-panel">
+                <div class="tm-panel-head">
+                  <div>
+                    <h2>Signals</h2>
+                    <p>Bridge state</p>
+                  </div>
+                </div>
+                <div id="signals" class="tm-signal-list"></div>
+                <div class="tm-panel-head compact">
+                  <div>
+                    <h2>Events</h2>
+                    <p>Latest relay events</p>
+                  </div>
+                </div>
+                <div id="events" class="tm-mini-list"></div>
+              </article>
+            </div>
+          </section>
+
+          <section class="tm-tab" id="tab-queue">
+            <article class="tm-panel">
+              <div class="tm-panel-head">
+                <div>
+                  <h2>Command Queue</h2>
+                  <p>Mobile → Relay → PC Agent</p>
+                </div>
+              </div>
+              <div id="commands" class="tm-list"></div>
+            </article>
+          </section>
+
+          <section class="tm-tab is-active" id="tab-chat">
+            <div class="tm-two-col chat-layout">
+              <article class="tm-panel chat-thread-panel">
+                <div class="tm-panel-head">
+                  <div>
+                    <h2>Codex Threads</h2>
+                    <p>Chọn thread để đọc và nhắn tiếp</p>
+                  </div>
+                  <div class="tm-thread-panel-actions">
+                    <button id="threadRefreshBtn" type="button">Reload</button>
+                    <button id="threadDrawerCloseBtn" class="tm-thread-drawer-close" type="button" aria-label="Đóng danh sách phiên">×</button>
+                  </div>
+                </div>
+                <div id="chatThreads" class="tm-list compact"></div>
+              </article>
+              <article class="tm-panel tm-panel-main chat-panel">
+                <div class="tm-panel-head">
+                  <div>
+                    <h2 id="chatThreadTitle">Thread Chat</h2>
+                    <p id="chatThreadMeta">Chưa chọn thread</p>
+                  </div>
+                  <div class="tm-chat-head-actions">
+                    <button id="threadDrawerBtn" type="button">Phiên</button>
+                    <button id="desktopRefreshBtn" type="button" title="Đóng và mở lại Codex Desktop trên PC đang chạy bridge">Refresh Desktop</button>
+                    <button id="threadReadBtn" type="button">Read</button>
+                  </div>
+                </div>
+                <div id="chatMessages" class="tm-chat-messages"></div>
+                <div class="tm-chat-composer">
+                  <div id="codexThreadFiles" class="tm-selected-files" hidden></div>
+                  <textarea id="codexThreadMessageInput" rows="4" placeholder="Nhắn vào Codex thread đang chọn"></textarea>
+                  <input id="codexThreadFileInput" type="file" multiple hidden>
+                  <button id="codexThreadAttachBtn" class="tm-chat-icon-button" type="button" aria-label="Đính kèm file" title="Đính kèm file">+</button>
+                  <button id="codexThreadSendBtn" class="tm-primary tm-chat-send" type="button" aria-label="Gửi tin nhắn" title="Gửi tin nhắn">↑</button>
+                </div>
+              </article>
+            </div>
+            <button id="threadDrawerBackdrop" class="tm-thread-drawer-backdrop" type="button" aria-label="Đóng danh sách phiên" hidden></button>
+          </section>
+
+          <section class="tm-tab" id="tab-agent">
+            <article class="tm-panel">
+              <div class="tm-panel-head">
+                <div>
+                  <h2>Agent PC</h2>
+                  <p>Local Bridge, command queue, file/task controls</p>
+                </div>
+                <button type="button" data-agent-open="tasks">Refresh status</button>
+              </div>
+              <div class="tm-agent-hub" aria-label="Agent PC tools">
+                <button type="button" data-agent-open="queue">
+                  <strong>Command Queue</strong>
+                  <span>Lệnh mobile đang pending/running/failed</span>
+                </button>
+                <button type="button" data-agent-open="tasks">
+                  <strong>PC Agent Status</strong>
+                  <span>Service, process, startup và codex exec</span>
+                </button>
+                <button type="button" data-agent-open="files">
+                  <strong>File Controls</strong>
+                  <span>List/search/read trong allowed roots</span>
+                </button>
+                <button type="button" data-agent-open="resident">
+                  <strong>IDE Agent</strong>
+                  <span>Collect status hoặc wake IDE Admin</span>
+                </button>
+              </div>
+              <div class="tm-agent-test">
+                <div class="tm-panel-head compact">
+                  <div>
+                    <h2>TicProxy Connection Test</h2>
+                    <p>Gọi thật /v1/responses qua provider/account đang chọn</p>
+                  </div>
+                  <button id="ticproxyConnectionTestBtn" class="tm-primary" type="button">Test</button>
+                </div>
+                <div class="tm-form-grid">
+                  <label>
+                    <span>Account</span>
+                    <select id="ticproxyConnectionAccountSelect"></select>
+                  </label>
+                  <label>
+                    <span>Model</span>
+                    <input id="ticproxyConnectionModelInput" value="gpt-5.5" aria-label="TicProxy test model">
+                  </label>
+                </div>
+                <label>
+                  <span>Prompt test</span>
+                  <textarea id="ticproxyConnectionPromptInput" rows="4" placeholder="Reply exactly: TICPROXY_CONNECTION_OK"></textarea>
+                </label>
+                <div id="ticproxyConnectionResult" class="tm-mini-list"></div>
+              </div>
+            </article>
+          </section>
+
+          <section class="tm-tab" id="tab-ticproxy">
+            <article class="tm-panel">
+              <div class="tm-panel-head">
+                <div>
+                  <h2>TicProxy Management</h2>
+                  <p id="ticproxyManagementMeta">Provider route</p>
+                </div>
+                <div class="tm-action-row inline">
+                  <button id="ticproxyStatusBtn" type="button">Refresh</button>
+                  <button id="ticproxyApiOneKeyBtn" class="tm-primary" type="button">API ONE KEY</button>
+                  <button id="switchProviderBtn" class="tm-primary" type="button">Switch Codex</button>
+                </div>
+              </div>
+              <div class="tm-form-grid">
+                <label>
+                  <span>Provider</span>
+                  <select id="providerSelect">
+                    <option value="ticproxy">TicProxy</option>
+                    <option value="openai">OpenAI</option>
+                  </select>
+                </label>
+                <label>
+                  <span>Model</span>
+                  <input id="modelInput" value="gpt-5.5" aria-label="Model">
+                </label>
+              </div>
+              <div id="modelList" class="tm-chip-list"></div>
+              <p id="ticproxyApiOneKeyStatus" class="tm-oauth-status">API ONE KEY sẽ tự cấu hình Codex Desktop dùng TicProxy qua Windows bridge.</p>
+            </article>
+
+            <nav class="tm-ticproxy-shortcuts" aria-label="TicProxy quick actions">
+              <button id="ticproxyApiOneKeyShortcutBtn" type="button"><strong>API ONE KEY</strong><span>Tự cấu hình Codex Desktop</span></button>
+              <button type="button" data-ticproxy-jump="oauth"><strong>OAuth Login</strong><span>Đăng nhập Auther/OAuth</span></button>
+              <button type="button" data-ticproxy-jump="auth"><strong>Auth Files</strong><span>Xem, bật/tắt, upload auth</span></button>
+              <button type="button" data-ticproxy-jump="quota"><strong>Quota</strong><span>Kiểm tra usage/quota account</span></button>
+              <button type="button" data-ticproxy-jump="providers"><strong>Provider</strong><span>Model list và route</span></button>
+            </nav>
+
+            <nav class="tm-subtabs" aria-label="TicProxy sections">
+              <button type="button" class="is-active" data-ticproxy-tab="oauth">OAuth</button>
+              <button type="button" data-ticproxy-tab="auth">Auth Files</button>
+              <button type="button" data-ticproxy-tab="quota">Quota</button>
+              <button type="button" data-ticproxy-tab="providers">Providers</button>
+              <button type="button" data-ticproxy-tab="config">Config</button>
+              <button type="button" data-ticproxy-tab="logs">Logs</button>
+              <button type="button" data-ticproxy-tab="info">Info</button>
+            </nav>
+
+            <div id="ticproxyPanels">
+              <section class="tm-subpanel" data-ticproxy-panel="config">
+                <div class="tm-two-col">
+                  <article class="tm-panel">
+                    <div class="tm-panel-head"><div><h2>Cài đặt cơ bản</h2><p>Cờ runtime</p></div><button id="ticproxySaveBasicBtn" class="tm-primary" type="button">Lưu</button></div>
+                    <div id="ticproxyBasicForm" class="tm-settings-grid"></div>
+                    <div class="tm-form-grid">
+                      <label><span>Proxy URL</span><input id="ticproxyProxyUrlInput" placeholder="http:// hoặc socks5://"></label>
+                      <label><span>Routing</span><select id="ticproxyRoutingSelect"><option value="round-robin">round-robin</option><option value="fill-first">fill-first</option></select></label>
+                      <label><span>Request retry</span><input id="ticproxyRequestRetryInput" type="number"></label>
+                      <label><span>Max retry interval</span><input id="ticproxyMaxRetryInput" type="number"></label>
+                      <label><span>Logs max MB</span><input id="ticproxyLogsMaxInput" type="number"></label>
+                    </div>
+                  </article>
+                  <article class="tm-panel">
+                    <div class="tm-panel-head"><div><h2>Proxy API key</h2><p id="ticproxyApiKeyMeta">0 key</p></div><button id="ticproxyAddApiKeyBtn" type="button">Tạo key</button></div>
+                    <input id="ticproxyApiKeyInput" type="text" placeholder="Để trống để TicProxy tự tạo key mới">
+                    <div id="ticproxyApiKeys" class="tm-mini-list"></div>
+                  </article>
+                </div>
+                <article class="tm-panel">
+                  <div class="tm-panel-head"><div><h2>config.yaml</h2><p>Đã ẩn secret</p></div><button id="ticproxySaveYamlBtn" type="button">Lưu YAML</button></div>
+                  <textarea id="ticproxyYamlEditor" class="tm-code-editor" rows="14" spellcheck="false"></textarea>
+                </article>
+              </section>
+
+              <section class="tm-subpanel" data-ticproxy-panel="providers">
+                <article class="tm-panel">
+                  <div class="tm-panel-head"><div><h2>AI Providers</h2><p>JSON editor</p></div><button id="ticproxySaveProviderBtn" class="tm-primary" type="button">Lưu JSON</button></div>
+                  <div id="ticproxyProviderStrip" class="tm-provider-strip"></div>
+                  <textarea id="ticproxyProviderEditor" class="tm-code-editor" rows="16" spellcheck="false"></textarea>
+                  <div id="ticproxyProviderEntries" class="tm-list compact"></div>
+                </article>
+              </section>
+
+              <section class="tm-subpanel" data-ticproxy-panel="auth">
+                <div class="tm-two-col">
+                  <article class="tm-panel">
+                    <div class="tm-panel-head">
+                      <div><h2>Tài khoản đăng nhập</h2><p>OAuth accounts</p></div>
+                      <div class="tm-action-row inline">
+                        <button id="ticproxyUploadAuthBtn" type="button">Import JSON</button>
+                        <button id="ticproxyDeleteAllAuthBtn" type="button">Xóa tất cả</button>
+                      </div>
+                    </div>
+                    <div class="tm-form-grid">
+                      <label><span>Tên file</span><input id="ticproxyAuthNameInput" placeholder="codex-auth.json"></label>
+                      <label><span>Tìm kiếm</span><input id="ticproxyAuthSearchInput" placeholder="provider/account"></label>
+                    </div>
+                    <textarea id="ticproxyAuthTextInput" class="tm-code-editor" rows="8" spellcheck="false" placeholder="Dán auth JSON để upload"></textarea>
+                    <div id="ticproxyAuthFiles" class="tm-list compact"></div>
+                  </article>
+                  <article class="tm-panel tm-panel-main">
+                    <div class="tm-panel-head"><div><h2>Xem auth</h2><p id="ticproxyAuthPreviewTitle">Đã ẩn secret</p></div></div>
+                    <pre id="ticproxyAuthPreview" class="tm-preview"></pre>
+                  </article>
+                </div>
+              </section>
+
+              <section class="tm-subpanel is-active" data-ticproxy-panel="oauth">
+                <article class="tm-panel">
+                  <div class="tm-panel-head"><div><h2>Đăng nhập OAuth</h2><p>Mở link trên PC đang chạy Windows bridge để tự xác nhận</p></div><button id="ticproxyOauthPollBtn" type="button">Kiểm tra</button></div>
+                  <div class="tm-form-grid">
+                    <label><span>Provider</span><select id="ticproxyOauthProviderSelect"></select></label>
+                    <label><span>Gemini project_id</span><input id="ticproxyOauthProjectInput" placeholder="nếu provider yêu cầu"></label>
+                  </div>
+                  <div class="tm-action-row"><button id="ticproxyOauthStartBtn" class="tm-primary" type="button">Tạo link đăng nhập</button><a id="ticproxyOauthLink" class="tm-link-button" href="#" target="_blank" rel="noreferrer">Mở link</a></div>
+                  <div class="tm-oauth-url-card">
+                    <span>Link OAuth</span>
+                    <strong id="ticproxyOauthShortUrl">Chưa tạo link</strong>
+                    <button id="ticproxyOauthCopyShortBtn" type="button">Copy link</button>
+                  </div>
+                  <div class="tm-oauth-url-card">
+                    <span>Callback URL</span>
+                    <strong id="ticproxyOauthCallbackBase">Tự động theo provider</strong>
+                    <button id="ticproxyOauthCopyCallbackBtn" type="button">Copy</button>
+                  </div>
+                  <input id="ticproxyOauthUrlInput" type="hidden">
+                  <input id="ticproxyOauthStateInput" type="hidden">
+                  <button id="ticproxyOauthCopyBtn" type="button" hidden>Copy URL</button>
+                  <button id="ticproxyOauthCopyStateBtn" type="button" hidden>Copy State</button>
+                  <label class="tm-inline-check" hidden><input id="ticproxyOauthAutoCallbackInput" type="checkbox" checked><span>Tự gửi callback</span></label>
+                  <p id="ticproxyOauthStatus" class="tm-oauth-status">Bấm tạo link, mở link trên PC đang chạy bridge. Callback sẽ tự gửi về TicProxy.</p>
+                  <div id="ticproxyOauthResult" class="tm-mini-list"></div>
+                  <details class="tm-advanced-block">
+                    <summary>Nhập callback thủ công</summary>
+                    <div class="tm-copy-row">
+                      <input id="ticproxyOauthCallbackInput" placeholder="http://localhost:1455/auth/callback?code=...&state=...">
+                      <button id="ticproxyOauthCallbackBtn" type="button">Submit</button>
+                    </div>
+                    <p class="tm-oauth-status">Chỉ dùng khi browser không tự đóng sau khi đăng nhập. Copy nguyên URL localhost cuối cùng có code và state rồi submit.</p>
+                  </details>
+                </article>
+                <details class="tm-advanced-block">
+                  <summary>Cài đặt model nâng cao</summary>
+                  <div class="tm-two-col">
+                    <article class="tm-panel">
+                      <div class="tm-panel-head"><div><h2>OAuth Excluded Models</h2><p>Per-provider model denylist</p></div><button id="ticproxySaveOauthModelsBtn" class="tm-primary" type="button">Lưu</button></div>
+                      <textarea id="ticproxyOauthExcludedEditor" class="tm-code-editor" rows="10" spellcheck="false"></textarea>
+                    </article>
+                    <article class="tm-panel">
+                      <div class="tm-panel-head"><div><h2>OAuth Model Alias</h2><p>Provider aliases</p></div></div>
+                      <textarea id="ticproxyOauthAliasEditor" class="tm-code-editor" rows="10" spellcheck="false"></textarea>
+                    </article>
+                  </div>
+                </details>
+              </section>
+
+              <section class="tm-subpanel" data-ticproxy-panel="quota">
+                <div class="tm-two-col">
+                  <article class="tm-panel">
+                    <div class="tm-panel-head"><div><h2>Usage Queue</h2><p>Lượt route gần đây</p></div><button id="ticproxyUsageQueueBtn" type="button">Tải</button></div>
+                    <input id="ticproxyUsageCountInput" type="number" value="10">
+                    <div id="ticproxyUsageQueue" class="tm-mini-list"></div>
+                    <div class="tm-panel-head compact"><div><h2>API Key Usage</h2><p>Thống kê</p></div></div>
+                    <div id="ticproxyApiKeyUsage" class="tm-mini-list"></div>
+                  </article>
+                  <article class="tm-panel tm-panel-main">
+                    <div class="tm-panel-head"><div><h2>OAuth Quota</h2><p>Check từng tài khoản</p></div><button id="ticproxyQuotaCheckAllBtn" type="button">Check tất cả</button></div>
+                    <div id="ticproxyQuotaCards" class="tm-list compact"></div>
+                  </article>
+                </div>
+              </section>
+
+              <section class="tm-subpanel" data-ticproxy-panel="logs">
+                <article class="tm-panel">
+                  <div class="tm-panel-head"><div><h2>Xem logs</h2><p>Ẩn/hiện theo từ khóa lọc</p></div><div class="tm-action-row inline"><button id="ticproxyLoadLogsBtn" type="button">Tải</button><button id="ticproxyClearLogsBtn" type="button">Xóa</button></div></div>
+                  <input id="ticproxyLogSearchInput" placeholder="Tìm trong logs">
+                  <pre id="ticproxyLogs" class="tm-log-view"></pre>
+                </article>
+                <article class="tm-panel">
+                  <div class="tm-panel-head"><div><h2>Request Error Logs</h2><p>Tải qua PC Agent</p></div></div>
+                  <div id="ticproxyErrorLogs" class="tm-list compact"></div>
+                </article>
+              </section>
+
+              <section class="tm-subpanel" data-ticproxy-panel="info">
+                <article class="tm-panel">
+                  <div class="tm-panel-head"><div><h2>Thông tin Management</h2><p id="ticproxyInfoMeta">/v0/management</p></div></div>
+                  <div id="ticproxyInfo" class="tm-signal-list"></div>
+                </article>
+              </section>
+            </div>
+          </section>
+
+          <section class="tm-tab" id="tab-resident">
+            <div class="tm-two-col">
+              <article class="tm-panel">
+                <div class="tm-panel-head">
+                  <div>
+                    <h2>Resident Agent</h2>
+                    <p>Mailbox control</p>
+                  </div>
+                </div>
+                <textarea id="residentMessageInput" rows="5" placeholder="Nhắn Resident Agent"></textarea>
+                <div class="tm-action-row">
+                  <button id="residentChatBtn" class="tm-primary" type="button">Send</button>
+                  <button id="residentStatusBtn" type="button">Collect status</button>
+                  <button id="residentWakeBtn" type="button">Wake IDE Admin</button>
+                </div>
+              </article>
+              <article class="tm-panel">
+                <div class="tm-panel-head">
+                  <div>
+                    <h2>Resident Snapshot</h2>
+                    <p>Process and API</p>
+                  </div>
+                </div>
+                <div id="residentDetails" class="tm-mini-list"></div>
+              </article>
+            </div>
+          </section>
+
+          <section class="tm-tab" id="tab-files">
+            <div class="tm-two-col">
+              <article class="tm-panel">
+                <div class="tm-panel-head">
+                  <div>
+                    <h2>File Controls</h2>
+                    <p>Allowed roots</p>
+                  </div>
+                  <button id="fileListBtn" type="button">List</button>
+                </div>
+                <div class="tm-form-grid">
+                  <label>
+                    <span>Root</span>
+                    <select id="fileRootSelect"></select>
+                  </label>
+                  <label>
+                    <span>Path</span>
+                    <input id="filePathInput" placeholder=".">
+                  </label>
+                </div>
+                <div class="tm-action-row">
+                  <input id="fileSearchInput" placeholder="Search files">
+                  <button id="fileSearchBtn" type="button">Search</button>
+                </div>
+                <div id="fileEntries" class="tm-list compact"></div>
+              </article>
+              <article class="tm-panel tm-panel-main">
+                <div class="tm-panel-head">
+                  <div>
+                    <h2>Preview</h2>
+                    <p id="filePreviewTitle">No file selected</p>
+                  </div>
+                </div>
+                <pre id="filePreview" class="tm-preview"></pre>
+              </article>
+            </div>
+          </section>
+
+          <section class="tm-tab" id="tab-tasks">
+            <div class="tm-two-col">
+              <article class="tm-panel">
+                <div class="tm-panel-head">
+                  <div>
+                    <h2>Task Controls</h2>
+                    <p>PC Agent runtime</p>
+                  </div>
+                  <button id="taskSnapshotBtn" type="button">Refresh</button>
+                </div>
+                <textarea id="codexExecInput" rows="5" placeholder="codex exec prompt"></textarea>
+                <button id="codexExecBtn" class="tm-primary" type="button">Queue codex exec</button>
+                <div id="serviceStatus" class="tm-mini-list"></div>
+              </article>
+              <article class="tm-panel tm-panel-main">
+                <div class="tm-panel-head">
+                  <div>
+                    <h2>Processes</h2>
+                    <p>Codex/Ticmiro runtime</p>
+                  </div>
+                </div>
+                <div id="processes" class="tm-list compact"></div>
+              </article>
+            </div>
+          </section>
+        </section>
+      </section>
+    </main>
+    <script src="/app.js"></script>
+  </body>
+</html>

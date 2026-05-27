@@ -1,0 +1,171 @@
+{
+  "providers": [
+    {
+      "id": "codex",
+      "label": "Codex / ChatGPT",
+      "type": "codex-oauth",
+      "baseUrl": "https://chatgpt.com/backend-api/codex",
+      "priority": 20,
+      "routing": {
+        "platform": "codex",
+        "strategy": "least-used"
+      },
+      "models": [
+        {
+          "id": "gpt-5.5",
+          "upstreamModel": "gpt-5.5"
+        },
+        {
+          "id": "gpt-5.4-mini",
+          "upstreamModel": "gpt-5.4-mini"
+        }
+      ],
+      "oauth": {
+        "adapter": "codex-cli-oauth-pkce",
+        "authorizationUrl": "https://auth.openai.com/oauth/authorize",
+        "tokenUrl": "https://auth.openai.com/oauth/token",
+        "callbackUrl": "http://localhost:1455/auth/callback",
+        "clientId": "app_EMoamEEZ73f0CkXaXp7hrann",
+        "tokenAuth": "none",
+        "scopeSeparator": " ",
+        "scopes": [
+          "openid",
+          "email",
+          "profile",
+          "offline_access"
+        ],
+        "authorizationParams": {
+          "prompt": "login",
+          "id_token_add_organizations": "true",
+          "codex_cli_simplified_flow": "true"
+        },
+        "accountModels": [
+          "gpt-5.5",
+          "gpt-5.4-mini"
+        ],
+        "profileFieldMap": {
+          "email": "email",
+          "name": "name"
+        }
+      }
+    },
+    {
+      "id": "gemini-cli",
+      "label": "Gemini CLI",
+      "type": "gemini-cli-oauth",
+      "baseUrl": "https://cloudcode-pa.googleapis.com",
+      "priority": 30,
+      "routing": {
+        "platform": "gemini-cli",
+        "strategy": "least-used"
+      },
+      "models": [
+        {
+          "id": "gemini-2.5-pro",
+          "upstreamModel": "gemini-2.5-pro"
+        },
+        {
+          "id": "gemini-2.5-flash",
+          "upstreamModel": "gemini-2.5-flash"
+        }
+      ],
+      "oauth": {
+        "adapter": "gemini-cli-oauth",
+        "authorizationUrl": "https://accounts.google.com/o/oauth2/auth",
+        "tokenUrl": "https://oauth2.googleapis.com/token",
+        "profileUrl": "https://www.googleapis.com/oauth2/v1/userinfo?alt=json",
+        "callbackUrl": "http://localhost:8085/oauth2callback",
+        "clientId": "",
+        "clientSecret": "",
+        "tokenAuth": "client_secret_post",
+        "scopeSeparator": " ",
+        "scopes": [
+          "https://www.googleapis.com/auth/cloud-platform",
+          "https://www.googleapis.com/auth/userinfo.email",
+          "https://www.googleapis.com/auth/userinfo.profile"
+        ],
+        "authorizationParams": {
+          "access_type": "offline",
+          "prompt": "consent"
+        },
+        "accountModels": [
+          "gemini-2.5-pro",
+          "gemini-2.5-flash"
+        ],
+        "profileFieldMap": {
+          "email": "email",
+          "name": "name"
+        }
+      }
+    },
+    {
+      "id": "antigravity",
+      "label": "Antigravity",
+      "type": "antigravity-oauth",
+      "baseUrl": "https://cloudcode-pa.googleapis.com",
+      "priority": 40,
+      "routing": {
+        "platform": "antigravity",
+        "strategy": "least-used"
+      },
+      "models": [
+        {
+          "id": "gemini-2.5-pro",
+          "upstreamModel": "gemini-2.5-pro"
+        },
+        {
+          "id": "gemini-2.5-flash",
+          "upstreamModel": "gemini-2.5-flash"
+        }
+      ],
+      "oauth": {
+        "adapter": "antigravity-oauth",
+        "authorizationUrl": "https://accounts.google.com/o/oauth2/v2/auth",
+        "tokenUrl": "https://oauth2.googleapis.com/token",
+        "profileUrl": "https://www.googleapis.com/oauth2/v2/userinfo?alt=json",
+        "callbackUrl": "http://localhost:51121/oauth-callback",
+        "clientId": "",
+        "clientSecret": "",
+        "tokenAuth": "client_secret_post",
+        "scopeSeparator": " ",
+        "scopes": [
+          "https://www.googleapis.com/auth/cloud-platform",
+          "https://www.googleapis.com/auth/userinfo.email",
+          "https://www.googleapis.com/auth/userinfo.profile",
+          "https://www.googleapis.com/auth/cclog",
+          "https://www.googleapis.com/auth/experimentsandconfigs"
+        ],
+        "authorizationParams": {
+          "access_type": "offline",
+          "prompt": "consent"
+        },
+        "accountModels": [
+          "gemini-2.5-pro",
+          "gemini-2.5-flash"
+        ],
+        "profileFieldMap": {
+          "email": "email",
+          "name": "name"
+        }
+      }
+    }
+  ],
+  "accounts": [],
+  "routes": {
+    "gpt-5.5": {
+      "provider": "codex",
+      "model": "gpt-5.5",
+      "accountStrategy": "least-used"
+    },
+    "gpt-5.4-mini": {
+      "provider": "codex",
+      "model": "gpt-5.4-mini",
+      "accountStrategy": "least-used"
+    },
+    "gemini-2.5-pro": {
+      "provider": "gemini-cli",
+      "model": "gemini-2.5-pro",
+      "accountStrategy": "least-used"
+    }
+  }
+}

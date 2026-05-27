@@ -1,0 +1,17 @@
+services:
+  ticproxy-codex-mobile:
+    build:
+      context: .
+      dockerfile: apps/server/Dockerfile
+    container_name: ticproxy-codex-mobile
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      TICMIRO_HOST: 0.0.0.0
+      TICMIRO_PORT: 4899
+      TICMIRO_DATA_DIR: /app/data
+    volumes:
+      - ./data:/app/data
+    ports:
+      - "127.0.0.1:4899:4899"

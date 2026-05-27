@@ -1,0 +1,15 @@
+{
+  "name": "codex-mobile-app-one-api-to-rule-them-all",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Self-hosted TicProxy gateway, Codex Mobile relay, and Windows bridge for community use.",
+  "license": "MIT",
+  "scripts": {
+    "check": "node --check apps/server/src/index.js && node --check apps/windows-bridge/src/index.js && node --check apps/mobile-web/public/app.js",
+    "server:start": "node apps/server/src/index.js",
+    "bridge:start": "node apps/windows-bridge/src/index.js"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

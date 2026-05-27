@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" role="img" aria-labelledby="title desc">
+  <title id="title">TicProxy service symbol</title>
+  <desc id="desc">Original blue proxy gateway mark with routed nodes and a secured central path.</desc>
+  <rect x="24" y="24" width="208" height="208" rx="50" fill="#1263eb"/>
+  <path d="M72 76h112" fill="none" stroke="#ffffff" stroke-width="18" stroke-linecap="round"/>
+  <path d="M128 76v48" fill="none" stroke="#ffffff" stroke-width="18" stroke-linecap="round"/>
+  <path d="M92 150h72" fill="none" stroke="#8eeaff" stroke-width="18" stroke-linecap="round"/>
+  <path d="M157 132l26 18-26 18" fill="none" stroke="#8eeaff" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M128 126v40c0 22-18 40-40 40H70" fill="none" stroke="#ffffff" stroke-width="18" stroke-linecap="round"/>
+  <path d="M128 126v40c0 22 18 40 40 40h18" fill="none" stroke="#ffffff" stroke-width="18" stroke-linecap="round"/>
+  <circle cx="72" cy="76" r="20" fill="#ffffff"/>
+  <circle cx="184" cy="76" r="20" fill="#ffffff"/>
+  <circle cx="70" cy="206" r="15" fill="#8eeaff"/>
+  <circle cx="186" cy="206" r="15" fill="#8eeaff"/>
+  <circle cx="128" cy="126" r="17" fill="#0b3d91" stroke="#ffffff" stroke-width="8"/>
+</svg>
