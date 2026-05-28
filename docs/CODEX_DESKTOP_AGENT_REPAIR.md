@@ -13,10 +13,10 @@ PROXY_API_KEY=<proxy-api-key-from-vps-install>
 OPTIONAL_ALLOWED_ROOTS=<for example: F:\WORKING;C:\Users\<you>\Documents;C:\Users\<you>\Desktop>
 ```
 
-For the test server used during development, `SERVER_URL` looked like:
+Example `SERVER_URL` format:
 
 ```text
-https://codex2.ticmiro.cloud
+https://codex.example.com
 ```
 
 ## Copy This Prompt Into Codex Desktop On The Target PC
@@ -173,7 +173,7 @@ $Candidates = @(
   $env:CODEX_HOME,
   (Join-Path $env:USERPROFILE ".codex"),
   (Join-Path $env:LOCALAPPDATA "OpenAI\Codex\codex-home"),
-  (Join-Path $env:LOCALAPPDATA "NhatNguyenIDE\codex-home")
+  (Join-Path $env:APPDATA "Codex\codex-home")
 ) | Where-Object { $_ }
 
 $CodexHome = $Candidates | Where-Object { Test-Path -LiteralPath $_ } | Select-Object -First 1

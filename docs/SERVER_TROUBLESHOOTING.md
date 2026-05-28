@@ -89,27 +89,27 @@ sudo ufw status
 
 On Google Cloud, also add a VPC firewall rule for ports `80,443` or attach a network tag that already allows HTTP/HTTPS traffic.
 
-## Add an SSH key directly from an existing root shell
+## Add your SSH key directly from an existing root shell
 
 If you are already logged in as `root`, do not paste `user:ssh-rsa ...` into the shell. That `user:` prefix is for Google metadata only.
 
-To create a normal Linux user named `ticmiro` and allow this repo maintainer key:
+To create a normal Linux user and allow your own SSH public key:
 
 ```bash
-sudo useradd -m -s /bin/bash ticmiro 2>/dev/null || true
-sudo usermod -aG sudo ticmiro
-sudo install -d -m 700 -o ticmiro -g ticmiro /home/ticmiro/.ssh
-sudo tee -a /home/ticmiro/.ssh/authorized_keys >/dev/null <<'EOF'
-ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDF2EF7JRpEOtJLYoXkzD6x21RisxzvGe/2c97jKvRrxj0xngxcWKvWHfeZhVZLuPqI3C/FN29KUUQbYxp/a/DSDn7fQmVi8ZRqG0EyYiDdvEqbn7ceI01Mt7B2o1DfQBQmm/sMpFd3tCdtoby09Kgo5ywWEd/1zPvTEOxYa2E1+oazgP73jhl+yHvXTzGw4jS3p2sSW7Z9Noc5U1n4Xg3tFQtq1K4EPLg/j0QKpqcZ5fJUCPCvpGwjf+PSENIlcBPqmLLlkZF5iCfCCopw74tBOqlIk3d33/7Y58Byj+8JjnEfrdcwFk/iV4xssBIYAjCxrI7rKhD0jqg7pqwvegLcuZjcdsbpZKQ+TUyEenJaFIqf5eVLK7ocKm8XqwEtVaX4m4GK1ZSNkWiwCr4/T1Y0tbsNcCtSGcXJ96ZLDznmUet7Ai+0/4/cL4ayBmfqZkB9FUem87GVpXU1Eb+Y7qIvrhLg4PI+s8zogvVyKtvIVNmE7VlDV1SgFjeyCJELcdE= ticmiro
-EOF
-sudo chown ticmiro:ticmiro /home/ticmiro/.ssh/authorized_keys
-sudo chmod 600 /home/ticmiro/.ssh/authorized_keys
+export SSH_USER=codexmobile
+export SSH_PUBLIC_KEY='ssh-ed25519 AAAA... your-key-comment'
+sudo useradd -m -s /bin/bash "$SSH_USER" 2>/dev/null || true
+sudo usermod -aG sudo "$SSH_USER"
+sudo install -d -m 700 -o "$SSH_USER" -g "$SSH_USER" "/home/$SSH_USER/.ssh"
+printf '%s\n' "$SSH_PUBLIC_KEY" | sudo tee -a "/home/$SSH_USER/.ssh/authorized_keys" >/dev/null
+sudo chown "$SSH_USER:$SSH_USER" "/home/$SSH_USER/.ssh/authorized_keys"
+sudo chmod 600 "/home/$SSH_USER/.ssh/authorized_keys"
 ```
 
-Then the maintainer can test:
+Then test:
 
 ```bash
-ssh -i ~/.ssh/gcp_key ticmiro@your-server-ip
+ssh -i ~/.ssh/your_private_key codexmobile@your-server-ip
 ```
 
 If your cloud image enforces Google OS Login, local `authorized_keys` may be ignored. In that case, add the key through the cloud provider metadata or temporarily disable OS Login for the instance.

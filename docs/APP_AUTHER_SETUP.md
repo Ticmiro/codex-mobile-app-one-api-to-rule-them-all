@@ -43,7 +43,7 @@ De test tu dau ngay bay gio, dung luong `Add API-key Account` ben duoi. Luong AP
 
 Neu provider login yeu cau callback tren may local, de Codex Desktop/Windows agent dang nhap cuc bo roi dan token JSON vao `Import Auth JSON`. App se luu file auth tren VPS va tao account trong pool.
 
-Giong ban IDE Admin, TicProxy community ho tro relay callback local qua Windows bridge. Webapp tu dien ngam callback mac dinh theo platform, nguoi dung pho thong khong can nhap tay:
+TicProxy community ho tro relay callback local qua Windows bridge. Webapp tu dien ngam callback mac dinh theo platform, nguoi dung pho thong khong can nhap tay:
 
 - Codex / ChatGPT: `http://localhost:1455/auth/callback`
 - Gemini CLI: `http://localhost:8085/oauth2callback`

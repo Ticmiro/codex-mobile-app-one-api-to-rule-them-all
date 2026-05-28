@@ -152,15 +152,22 @@ function normalizeOAuth(oauth) {
 function normalizeAccount(account) {
   const providerId = String(account.providerId || account.provider_id || account.provider || '').trim();
   const idToken = String(account.idToken || account.id_token || account.tokenPayload?.id_token || account.token_payload?.id_token || '').trim();
-  const jwtProfile = profileFromIdToken(idToken);
-  const profile = {
-    ...jwtProfile,
-    ...(account.profile && typeof account.profile === 'object' ? account.profile : {}),
-  };
+  const tokenPayload = objectOrEmpty(account.tokenPayload || account.token_payload);
+  const providerSpecificData = objectOrEmpty(account.providerSpecificData || account.provider_specific_data);
+  const profile = enrichProfileFromTokenPayload(objectOrEmpty(account.profile), {
+    ...tokenPayload,
+    id_token: idToken,
+    access_token: account.accessToken || account.access_token || tokenPayload.access_token,
+    user: tokenPayload.user || account.user,
+    account: tokenPayload.account || account.account,
+    providerSpecificData,
+  });
+  const email = accountEmail({ ...account, profile, providerSpecificData });
+  const readableLabel = readableAccountLabel(account.label || account.name);
   return {
     id: String(account.id || account.accountId || account.account_id || '').trim(),
     providerId,
-    label: firstString(account.label, account.name, account.email, profile.email, profile.name, account.id),
+    label: firstString(email, readableLabel, profile.name, account.id),
     type: String(account.type || account.accountType || account.account_type || 'oauth').trim(),
     status: String(account.status || (account.disabled ? 'disabled' : 'active')).trim(),
     priority: Number(account.priority || 100),
@@ -174,7 +181,7 @@ function normalizeAccount(account) {
     modelRoutes: objectOrEmpty(account.modelRoutes || account.model_routes || account.routes),
     quota: normalizeQuota(account.quota || account.limits),
     profile,
-    providerSpecificData: objectOrEmpty(account.providerSpecificData || account.provider_specific_data),
+    providerSpecificData,
     error: String(account.error || '').trim(),
     createdAt: String(account.createdAt || account.created_at || '').trim(),
     updatedAt: String(account.updatedAt || account.updated_at || '').trim(),
@@ -246,6 +253,7 @@ function profileFromIdToken(idToken) {
 function enrichProfileFromTokenPayload(profile, tokenPayload = {}) {
   const idToken = tokenPayload.id_token || tokenPayload.idToken;
   const accessToken = tokenPayload.access_token || tokenPayload.accessToken;
+  const baseProfile = objectOrEmpty(profile);
   const jwtProfile = {
     ...profileFromIdToken(idToken),
     ...profileFromIdToken(accessToken),
@@ -254,15 +262,115 @@ function enrichProfileFromTokenPayload(profile, tokenPayload = {}) {
   const sourceAccount = objectOrEmpty(tokenPayload.account);
   const providerSpecificData = objectOrEmpty(tokenPayload.providerSpecificData || tokenPayload.provider_specific_data);
   return {
+    ...baseProfile,
     ...jwtProfile,
-    id: firstString(sourceUser.id, jwtProfile.id),
-    sub: firstString(sourceUser.id, jwtProfile.sub),
-    email: firstString(sourceUser.email, tokenPayload.email, jwtProfile.email),
-    name: firstString(sourceUser.name, tokenPayload.name, jwtProfile.name),
-    accountId: firstString(sourceAccount.id, providerSpecificData.chatgptAccountId, providerSpecificData.chatgpt_account_id, tokenPayload.accountId, tokenPayload.account_id, jwtProfile.accountId),
-    planType: firstString(sourceAccount.planType, sourceAccount.plan_type, providerSpecificData.chatgptPlanType, providerSpecificData.chatgpt_plan_type, tokenPayload.planType, tokenPayload.plan_type, jwtProfile.planType),
-    ...objectOrEmpty(profile),
+    id: firstString(baseProfile.id, sourceUser.id, sourceAccount.id, jwtProfile.id),
+    sub: firstString(baseProfile.sub, sourceUser.id, jwtProfile.sub),
+    email: firstString(baseProfile.email, sourceUser.email, sourceAccount.email, providerSpecificData.email, providerSpecificData.chatgptEmail, tokenPayload.email, jwtProfile.email, emailFromText(baseProfile.label), emailFromText(tokenPayload.label)),
+    name: firstString(baseProfile.name, sourceUser.name, sourceAccount.name, tokenPayload.name, jwtProfile.name),
+    accountId: firstString(baseProfile.accountId, sourceAccount.id, providerSpecificData.chatgptAccountId, providerSpecificData.chatgpt_account_id, tokenPayload.accountId, tokenPayload.account_id, jwtProfile.accountId),
+    planType: firstString(baseProfile.planType, sourceAccount.planType, sourceAccount.plan_type, providerSpecificData.chatgptPlanType, providerSpecificData.chatgpt_plan_type, tokenPayload.planType, tokenPayload.plan_type, jwtProfile.planType),
   };
+}
+
+function isTechnicalAccountLabel(value) {
+  const text = String(value || '').trim();
+  if (!text) return true;
+  if (text.includes('@')) return false;
+  if (/^(acct|auth|oauth|token|session)[-_][a-z0-9._-]{8,}$/i.test(text)) return true;
+  if (/^[a-f0-9]{16,}(?:\.json)?$/i.test(text)) return true;
+  if (/^[a-z0-9_-]{24,}(?:\.json)?$/i.test(text)) return true;
+  return false;
+}
+
+function readableAccountLabel(value) {
+  const text = String(value || '').trim();
+  return isTechnicalAccountLabel(text) ? '' : text;
+}
+
+function emailFromObject(...sources) {
+  for (const source of sources) {
+    if (!source || typeof source !== 'object') continue;
+    const email = firstString(
+      source.email,
+      source.mail,
+      source.userEmail,
+      source.user_email,
+      source.accountEmail,
+      source.account_email,
+      source.chatgptEmail,
+      source.chatgpt_email,
+      source.user?.email,
+      source.profile?.email,
+      source.account?.email,
+      source.providerSpecificData?.email,
+      source.providerSpecificData?.chatgptEmail,
+      source.provider_specific_data?.email,
+      source.provider_specific_data?.chatgpt_email,
+      findDeepValue(source, ['email', 'mail', 'userEmail', 'accountEmail', 'chatgptEmail']),
+    );
+    const parsed = emailFromText(email);
+    if (parsed) return parsed;
+  }
+  return '';
+}
+
+function accountIdFromObject(...sources) {
+  for (const source of sources) {
+    if (!source || typeof source !== 'object') continue;
+    const value = firstString(
+      source.accountId,
+      source.account_id,
+      source.chatgptAccountId,
+      source.chatgpt_account_id,
+      source.id,
+      source.account?.id,
+      source.user?.accountId,
+      source.user?.account_id,
+      source.providerSpecificData?.chatgptAccountId,
+      source.providerSpecificData?.chatgpt_account_id,
+      source.provider_specific_data?.chatgptAccountId,
+      source.provider_specific_data?.chatgpt_account_id,
+      findDeepValue(source, ['chatgptAccountId', 'chatgpt_account_id', 'accountId', 'account_id']),
+    );
+    if (value) return value;
+  }
+  return '';
+}
+
+function accountEmail(account = {}, row = {}) {
+  return firstString(
+    emailFromObject(account.profile, account.providerSpecificData, account.provider_specific_data, account, row),
+    emailFromText(row.accountEmail),
+    emailFromText(row.account_email),
+    emailFromText(row.email),
+    emailFromText(row.displayName),
+    emailFromText(row.label),
+    emailFromText(row.account),
+    emailFromText(row.name),
+    emailFromText(account.profile?.name),
+    emailFromText(account.profile?.label),
+    emailFromText(account.accountEmail),
+    emailFromText(account.account_email),
+    emailFromText(account.label),
+    emailFromText(account.name),
+    emailFromText(account.id),
+  );
+}
+
+function accountDisplayName(account = {}, row = {}) {
+  const email = accountEmail(account, row);
+  return firstString(
+    email,
+    readableAccountLabel(row.displayName),
+    readableAccountLabel(row.label),
+    readableAccountLabel(row.account),
+    readableAccountLabel(account.label),
+    readableAccountLabel(account.name),
+    account.profile?.name,
+    row.name,
+    account.id,
+  );
 }
 
 function normalizeQuota(value) {
@@ -441,10 +549,15 @@ function publicOAuthStatuses(statuses = {}) {
 }
 
 function publicAccount(account, usage = null) {
+  const email = accountEmail(account);
+  const displayName = accountDisplayName(account);
   return {
     id: account.id,
     providerId: account.providerId,
     label: account.label,
+    displayName,
+    email,
+    accountEmail: email,
     type: account.type,
     status: account.status,
     priority: account.priority,
@@ -582,7 +695,7 @@ function safeAuthFileName(name) {
 }
 
 function oauthAuthFileName(provider, account) {
-  const email = account.profile?.email || '';
+  const email = accountEmail(account);
   const plan = account.profile?.planType || '';
   return safeAuthFileName([provider.id, email || account.label || account.id, plan].filter(Boolean).join('-'));
 }
@@ -594,8 +707,8 @@ function writeOAuthAuthFile(provider, account, tokenPayload) {
     type: provider.id,
     providerId: provider.id,
     accountId: account.id,
-    email: account.profile?.email || '',
-    label: account.label,
+    email: accountEmail(account),
+    label: accountDisplayName(account),
     profile: account.profile,
     tokenPayload: {
       access_token: tokenPayload.access_token || '',
@@ -623,24 +736,40 @@ function listAuthFiles() {
       const profile = objectOrEmpty(payload.profile);
       const providerSpecificData = objectOrEmpty(payload.providerSpecificData || payload.provider_specific_data);
       const tokenProfile = objectOrEmpty(tokenPayload.profile);
+      const tokenUser = objectOrEmpty(tokenPayload.user);
+      const tokenAccount = objectOrEmpty(tokenPayload.account);
+      const tokenProviderSpecificData = objectOrEmpty(tokenPayload.providerSpecificData || tokenPayload.provider_specific_data);
       const email = firstString(
+        emailFromObject(payload, tokenPayload, user, profile, tokenUser, tokenAccount, providerSpecificData, tokenProviderSpecificData, tokenProfile),
         payload.email,
         user.email,
         profile.email,
+        tokenUser.email,
+        tokenAccount.email,
         tokenPayload.email,
         tokenProfile.email,
         providerSpecificData.email,
         providerSpecificData.chatgptEmail,
+        tokenProviderSpecificData.email,
+        tokenProviderSpecificData.chatgptEmail,
+        tokenProviderSpecificData.chatgpt_email,
         emailFromText(payload.label),
         emailFromText(payload.name),
+        emailFromText(tokenPayload.label),
+        emailFromText(tokenPayload.name),
         emailFromText(name),
       );
-      const label = firstString(payload.label, email, user.name, profile.name, tokenPayload.name, tokenProfile.name);
+      const accountId = firstString(
+        payload.accountId,
+        payload.account_id,
+        accountIdFromObject(payload, tokenPayload, user, profile, tokenUser, tokenAccount, providerSpecificData, tokenProviderSpecificData, tokenProfile),
+      );
+      const label = firstString(email, readableAccountLabel(payload.label), user.name, profile.name, tokenUser.name, tokenAccount.name, tokenPayload.name, tokenProfile.name, payload.label);
       const stat = fs.statSync(file);
       return {
         name,
         providerId: String(payload.providerId || payload.provider_id || payload.provider || payload.type || '').trim(),
-        accountId: String(payload.accountId || payload.account_id || '').trim(),
+        accountId: String(accountId || '').trim(),
         label: String(label || '').trim(),
         email: String(email || '').trim(),
         disabled: Boolean(payload.disabled),
@@ -1163,11 +1292,15 @@ function buildCodexSnapshot(rawSnapshot = {}) {
 
 function usageRows(currentState = state()) {
   const usage = publicUsage(currentState.usage);
+  const config = providersConfig();
+  const accountsById = new Map((config.accounts || []).map((account) => [account.id, account]));
   const rows = [];
-  for (const [account, bucket] of Object.entries(usage.accounts || {})) {
+  for (const [accountId, bucket] of Object.entries(usage.accounts || {})) {
+    const account = accountsById.get(accountId);
     rows.push({
       provider: bucket.providerId || 'account',
-      account,
+      account: account ? accountDisplayName(account) : accountId,
+      accountId,
       model: bucket.model || '-',
       status: bucket.lastStatus || 0,
       time: bucket.lastUsedAt || '',
@@ -1190,26 +1323,32 @@ function usageRows(currentState = state()) {
 }
 
 function authFileRows(config, currentState = state()) {
-  const files = listAuthFiles().map((file, index) => ({
-    ...file,
-    name: file.name,
-    displayName: firstString(file.email, file.label, file.name),
-    provider: file.providerId || 'auth-file',
-    account: file.accountId || file.label || '',
-    authIndex: index,
-    disabled: Boolean(file.disabled),
-  }));
+  const accountsById = new Map((config.accounts || []).map((account) => [account.id, account]));
+  const files = listAuthFiles().map((file, index) => {
+    const account = accountsById.get(file.accountId);
+    const email = firstString(file.email, accountEmail(account, file));
+    const displayName = accountDisplayName(account, { ...file, email });
+    return {
+      ...file,
+      name: file.name,
+      displayName,
+      providerId: file.providerId || account?.providerId || '',
+      provider: file.providerId || account?.providerId || 'auth-file',
+      account: displayName,
+      label: firstString(email, readableAccountLabel(file.label), readableAccountLabel(account?.label), file.label),
+      email,
+      authIndex: index,
+      disabled: account ? !isAccountActive(account) : Boolean(file.disabled),
+      routeEligible: account ? accountCanRouteModel(account) : file.routeEligible,
+      tokenConfigured: account ? Boolean(accountToken(account)) : file.tokenConfigured,
+      refreshConfigured: account ? Boolean(account.refreshToken) : file.refreshConfigured,
+      quota: account?.quota || file.quota || {},
+      usage: account ? publicUsageBucket(currentState.usage?.accounts?.[account.id]) : file.usage,
+    };
+  });
   const accountRows = (config.accounts || []).map((account, index) => {
-    const email = firstString(
-      account.profile?.email,
-      account.email,
-      account.providerSpecificData?.email,
-      account.providerSpecificData?.chatgptEmail,
-      emailFromText(account.label),
-      emailFromText(account.name),
-      emailFromText(account.id),
-    );
-    const displayName = firstString(email, account.label, account.id);
+    const email = accountEmail(account);
+    const displayName = accountDisplayName(account);
     return {
       name: account.id,
       displayName,
@@ -1688,7 +1827,7 @@ function routeForConnectionTest(config, currentState, requestedModel, payload = 
 }
 
 function connectionTestAccountLabel(account = {}) {
-  return firstString(account.profile?.email, account.label, account.id);
+  return accountDisplayName(account);
 }
 
 async function connectionTestResult(config, currentState, payload = {}) {
@@ -1720,7 +1859,7 @@ async function connectionTestResult(config, currentState, payload = {}) {
       provider: route.provider.id,
       accountId: route.account?.id || '',
       accountLabel: route.account ? connectionTestAccountLabel(route.account) : 'Provider API key',
-      accountEmail: route.account?.profile?.email || '',
+      accountEmail: route.account ? accountEmail(route.account) : '',
       requestedModel: route.requestedModel,
       upstreamModel: route.upstreamModel,
       routeMode,
@@ -2204,7 +2343,7 @@ async function quotaProbeHttp(config, provider, account, row) {
 
   let body;
   if (provider.id === 'gemini-cli' || provider.id === 'antigravity') {
-    const projectId = quotaProjectId(activeAccount, row) || (provider.id === 'antigravity' ? 'bamboo-precept-lgxtn' : '');
+    const projectId = quotaProjectId(activeAccount, row);
     if (!projectId) throw httpError(400, `${provider.id} quota needs project_id in the auth metadata.`);
     body = JSON.stringify({ project: projectId });
   }
@@ -2235,7 +2374,9 @@ async function quotaProbeResult(config, currentState, name) {
   const baseResult = {
     ok: true,
     name: authFileNameForServer(row),
-    displayName: firstString(row.email, row.label, row.account, row.name),
+    displayName: accountDisplayName(account, row),
+    accountLabel: accountDisplayName(account, row),
+    accountEmail: accountEmail(account, row),
     provider: providerId,
     checkedAt: now(),
     quota: account?.quota || row.quota || {},
@@ -3356,7 +3497,8 @@ function serveStatic(req, res, url) {
     '.js': 'application/javascript; charset=utf-8',
     '.svg': 'image/svg+xml',
   };
-  res.writeHead(200, { 'content-type': types[ext] || 'application/octet-stream' });
+  const cacheControl = ['.html', '.css', '.js'].includes(ext) ? 'no-store' : 'public, max-age=3600';
+  res.writeHead(200, { 'content-type': types[ext] || 'application/octet-stream', 'cache-control': cacheControl });
   fs.createReadStream(file).pipe(res);
 }
 

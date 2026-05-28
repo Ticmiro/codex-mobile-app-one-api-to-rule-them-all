@@ -739,12 +739,17 @@ function emailFromText(value) {
 
 function authEmail(item, result = null) {
   return [
+    result?.accountEmail,
     result?.email,
     result?.profile?.email,
+    result?.accountLabel,
     result?.displayName,
     result?.display_name,
+    item?.accountEmail,
+    item?.account_email,
     item?.email,
     item?.profile?.email,
+    item?.profile?.name,
     item?.label,
     item?.displayName,
     item?.display_name,
@@ -757,6 +762,9 @@ function isGenericAuthDisplay(value) {
   const text = String(value || '').trim().toLowerCase();
   if (!text) return true;
   if (text.includes('@')) return false;
+  if (/^(acct|auth|oauth|token|session)[-_][a-z0-9._-]{8,}(?:\.json)?$/i.test(text)) return true;
+  if (/^[a-f0-9]{16,}(?:\.json)?$/i.test(text)) return true;
+  if (/^[a-z0-9_-]{24,}(?:\.json)?$/i.test(text)) return true;
   return [
     'account',
     'auth-file',
@@ -771,8 +779,10 @@ function authDisplayName(item, result = null) {
   const email = authEmail(item, result);
   if (email) return email;
   const candidates = [
+    result?.accountLabel,
     result?.displayName,
     result?.display_name,
+    item?.accountLabel,
     item?.displayName,
     item?.display_name,
     item?.label,
@@ -792,7 +802,7 @@ function authQuotaMeta(item, result = null, provider = '') {
   return [
     provider,
     email ? `email=${email}` : '',
-    fileName && fileName !== authDisplayName(item, result) ? `file=${fileName}` : '',
+    fileName && !isGenericAuthDisplay(fileName) && fileName !== authDisplayName(item, result) ? `file=${fileName}` : '',
     `authIndex=${authIndex(item) || '-'}`,
     result?.checkedAt ? formatDate(result.checkedAt) : 'not checked',
   ].filter(Boolean).join(' · ');
@@ -1802,7 +1812,7 @@ function renderTasks(tasksPayload, lastTaskResult) {
       <small>${escapeHtml(process.command || process.name)}</small>
       <small>${escapeHtml(timeAgo(process.createdAt))}</small>
     </div>
-  `).join('') || itemHtml('No tracked processes', ['Snapshot has no Codex/Ticmiro process rows.']);
+  `).join('') || itemHtml('No tracked processes', ['Snapshot has no Codex/runtime process rows.']);
 }
 
 async function refresh() {

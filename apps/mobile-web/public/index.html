@@ -3,13 +3,13 @@
   <head>
     <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
-    <title>Ticmiro Mobile Control</title>
+    <title>Codex Mobile Control</title>
     <link rel="stylesheet" href="/styles.css">
   </head>
   <body data-active-tab="chat">
     <main class="tm-workbench">
-      <aside class="tm-rail" aria-label="Ticmiro modules">
-        <div class="tm-rail-brand" title="Ticmiro.cloud" aria-label="Ticmiro.cloud">
+      <aside class="tm-rail" aria-label="Codex Mobile modules">
+        <div class="tm-rail-brand" title="Codex Mobile" aria-label="Codex Mobile">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 17.5h10.5a3.5 3.5 0 0 0 .7-6.93A5.5 5.5 0 0 0 6.63 8.1 4.75 4.75 0 0 0 6 17.5Z"/><path d="M8 13h8"/></svg>
         </div>
         <button class="tm-rail-item is-active" type="button" data-tab="chat" title="Codex Chat">
@@ -29,7 +29,7 @@
       <section class="tm-main">
         <header class="tm-commandbar">
           <div class="tm-breadcrumb">
-            <span>Ticmiro.cloud</span>
+            <span>Codex Mobile</span>
             <span>/</span>
             <strong id="activeTitle">Codex Chat</strong>
           </div>
@@ -50,7 +50,7 @@
           <section class="tm-hero">
             <div>
               <div class="tm-kicker">Codex Mobile Control</div>
-              <h1>Ticmiro.cloud</h1>
+              <h1>Codex Mobile</h1>
               <p id="subtitle">Codex CLI · TicProxy · Resident Agent</p>
             </div>
             <div class="tm-live-pill" id="livePill">offline</div>
@@ -169,8 +169,8 @@
                   <span>List/search/read trong allowed roots</span>
                 </button>
                 <button type="button" data-agent-open="resident">
-                  <strong>IDE Agent</strong>
-                  <span>Collect status hoặc wake IDE Admin</span>
+                  <strong>Local Agent</strong>
+                  <span>Collect status hoặc wake local bridge</span>
                 </button>
               </div>
               <div class="tm-agent-test">
@@ -407,7 +407,7 @@
                 <div class="tm-action-row">
                   <button id="residentChatBtn" class="tm-primary" type="button">Send</button>
                   <button id="residentStatusBtn" type="button">Collect status</button>
-                  <button id="residentWakeBtn" type="button">Wake IDE Admin</button>
+                  <button id="residentWakeBtn" type="button">Wake Agent</button>
                 </div>
               </article>
               <article class="tm-panel">
@@ -478,7 +478,7 @@
                 <div class="tm-panel-head">
                   <div>
                     <h2>Processes</h2>
-                    <p>Codex/Ticmiro runtime</p>
+                    <p>Codex/TicProxy runtime</p>
                   </div>
                 </div>
                 <div id="processes" class="tm-list compact"></div>

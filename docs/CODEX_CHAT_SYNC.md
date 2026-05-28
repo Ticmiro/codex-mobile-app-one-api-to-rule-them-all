@@ -254,8 +254,8 @@ Các thư mục thường gặp:
 
 ```text
 C:\Users\<you>\.codex
-C:\Users\<you>\AppData\Local\NhatNguyenIDE\codex-home
 C:\Users\<you>\AppData\Local\OpenAI\Codex\codex-home
+C:\Users\<you>\AppData\Roaming\Codex\codex-home
 ```
 
 Tìm thư mục nào có:

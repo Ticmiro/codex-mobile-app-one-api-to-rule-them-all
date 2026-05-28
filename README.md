@@ -10,7 +10,7 @@ The intended product flow is:
 4. User opens the built-in Auther Console, adds providers, and logs accounts into their own server.
 5. Codex uses one API key from the user's server, while the server routes across many accounts/models.
 
-No user needs to call `api.ticmiro.cloud`; TicProxy provides its own management and routing layer.
+No managed proxy endpoint is required; each install provides its own management and routing layer.
 
 Current login status: OAuth URL generation is built in for `Codex / ChatGPT`, using the CLI-style local callback URL and PKCE. The Windows bridge includes a local callback relay, so when the login link is opened on the PC running the bridge, the final localhost callback is submitted back to the VPS automatically. `Gemini CLI` and `Antigravity` presets are present too, but their Google OAuth client values must be supplied through environment variables or `data/providers.json` because GitHub push protection blocks shipping those client credentials in a public repo. Custom providers can still use the generic Authorization Code + PKCE adapter.
 
@@ -30,7 +30,7 @@ flowchart LR
 ## Components
 
 - `apps/server`: VPS server with static mobile UI, relay endpoints, admin endpoints, OAuth callback, and OpenAI-compatible `/v1`.
-- `apps/mobile-web`: mobile-first product console with the same retro management style used in IDE Admin: Codex Chat Mobile, PC Agent, Auther Platforms, provider setup, OAuth/API-key account login, quota/routing, and install info.
+- `apps/mobile-web`: mobile-first product console with Codex Chat Mobile, PC Agent, Auther Platforms, provider setup, OAuth/API-key account login, quota/routing, and install info.
 - `apps/windows-bridge`: Windows-side bridge that connects local Codex Desktop/Codex CLI state to the user's VPS, syncs Desktop thread transcripts from `CODEX_HOME/sessions`, and can run queued `codex.exec` or selected-thread sends from the mobile Agent/Chat tabs.
 - `scripts/deploy-server-one-shot.sh`: one-command VPS deployment.
 - `scripts/install-windows-bridge.ps1`: one-command Windows bridge setup.
@@ -175,7 +175,7 @@ After VPS install, open your domain with the printed `Mobile token`:
 https://codex.example.com/?token=<mobile-token-from-installer>
 ```
 
-The browser UI intentionally uses the same dark Ticmiro control surface as `codex.ticmiro.cloud`. New users do not need to choose an AIOS/workbench template.
+The browser UI opens directly into the TicProxy control surface. New users do not need to choose a workbench template.
 
 The app has three main areas:
 
@@ -205,7 +205,7 @@ Provider OAuth and account routing are configured in `data/providers.json` on th
 - `POST /admin/oauth/start` starts provider login with Authorization Code + PKCE adapter settings.
 - `GET /admin/codex-auth-url`, `/admin/gemini-cli-auth-url`, and `/admin/antigravity-auth-url` provide provider auth URL aliases for configured platform providers.
 - `GET /admin/oauth/status` and `/admin/get-auth-status` expose login status polling for the web UI or local helpers.
-- `POST /admin/oauth-callback` and `/oauth-callback` accept IDE Admin style `{provider, redirect_url}` callback relay payloads and return JSON confirmation after saving the account.
+- `POST /admin/oauth-callback` and `/oauth-callback` accept local relay `{provider, redirect_url}` callback payloads and return JSON confirmation after saving the account.
 - `POST /agent/oauth-callback` lets the Windows bridge submit a local browser callback using only the bridge token.
 - `GET /oauth/callback` exchanges the code, fetches profile metadata when configured, and saves an account.
 - `POST /admin/accounts` adds API-key accounts for providers that are not OAuth based.

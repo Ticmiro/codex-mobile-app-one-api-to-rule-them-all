@@ -66,7 +66,7 @@ The status endpoint returns:
 
 After callback succeeds, `status` becomes `completed` and includes the saved `accountId`.
 
-For IDE Admin style local relay, request the auth URL with a local callback URL:
+For local relay through the Windows bridge, request the auth URL with a local callback URL:
 
 ```bash
 curl 'https://codex.example.com/codex-auth-url?callbackUrl=http%3A%2F%2Flocalhost%3A1455%2Fauth%2Fcallback' \

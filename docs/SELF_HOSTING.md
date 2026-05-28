@@ -15,7 +15,7 @@ The user's VPS runs:
 - OAuth callback endpoint
 - Admin API for providers/accounts
 
-The server is the user's private proxy. It is not `api.ticmiro.cloud`.
+The server is the user's private proxy. It does not depend on a managed Ticmiro proxy endpoint.
 
 ## Required ports
 
