@@ -1,79 +1,76 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1120" height="270" viewBox="0 0 1120 270" role="img" aria-labelledby="title desc">
-  <title id="title">Install once flow</title>
-  <desc id="desc">A five step setup flow from GitHub repo link to VPS install, mobile console, Windows bridge, and one proxy key.</desc>
+  <title id="title">AIOS-style install once flow</title>
+  <desc id="desc">Five AIOS-style tiles showing repo link, VPS install, mobile console, Windows bridge, and one API key.</desc>
   <defs>
-    <linearGradient id="step" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#111827"/>
-      <stop offset="1" stop-color="#162034"/>
+    <linearGradient id="ink" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#171b21"/>
+      <stop offset="1" stop-color="#0c0f13"/>
     </linearGradient>
-    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0" stop-color="#54c7ff"/>
-      <stop offset=".5" stop-color="#37ffb2"/>
-      <stop offset="1" stop-color="#ffe082"/>
+    <linearGradient id="aura" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2bd8c4"/>
+      <stop offset="0.54" stop-color="#f0b95c"/>
+      <stop offset="1" stop-color="#e66d67"/>
     </linearGradient>
-    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
-      <feGaussianBlur stdDeviation="7" result="blur"/>
-      <feMerge>
-        <feMergeNode in="blur"/>
-        <feMergeNode in="SourceGraphic"/>
-      </feMerge>
+    <linearGradient id="auraLine" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#2bd8c4"/>
+      <stop offset=".5" stop-color="#f0b95c"/>
+      <stop offset="1" stop-color="#e66d67"/>
+    </linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="14" stdDeviation="16" flood-color="#000" flood-opacity=".34"/>
     </filter>
     <style>
-      .bg { fill: #0b1020; }
-      .card { fill: url(#step); stroke: rgba(255,255,255,.16); stroke-width: 1.3; }
-      .num { font: 900 22px Arial, Helvetica, sans-serif; fill: #0b1020; letter-spacing: 0; }
-      .head { font: 800 22px Arial, Helvetica, sans-serif; fill: #f7fbff; letter-spacing: 0; }
-      .body { font: 600 14px Arial, Helvetica, sans-serif; fill: #aebfd0; letter-spacing: 0; }
-      .arrow { stroke: url(#accent); stroke-width: 4; stroke-linecap: round; stroke-dasharray: 12 11; animation: move 4.8s linear infinite; filter: url(#glow); }
-      .blink { animation: blink 2s ease-in-out infinite; }
+      .bg { fill: #0d1117; }
+      .card { fill: url(#ink); stroke: rgba(246,242,232,.13); stroke-width: 1.2; filter: url(#shadow); }
+      .num { font: 900 20px Inter, Segoe UI, Arial, sans-serif; fill: #0d1117; letter-spacing: 0; }
+      .head { font: 800 20px Inter, Segoe UI, Arial, sans-serif; fill: #f6f2e8; letter-spacing: 0; }
+      .body { font: 650 13px Inter, Segoe UI, Arial, sans-serif; fill: rgba(246,242,232,.58); letter-spacing: 0; }
+      .arrow { stroke: url(#auraLine); stroke-width: 4; stroke-linecap: round; stroke-dasharray: 12 12; animation: move 4.8s linear infinite; }
+      .pulse { animation: pulse 2.3s ease-in-out infinite; transform-origin: center; }
       @keyframes move { to { stroke-dashoffset: -120; } }
-      @keyframes blink { 0%,100% { opacity: .55; } 50% { opacity: 1; } }
+      @keyframes pulse { 0%,100% { opacity:.62; transform: scale(.96); } 50% { opacity:1; transform: scale(1.06); } }
     </style>
   </defs>
-  <rect class="bg" width="1120" height="270" rx="26"/>
-  <path class="arrow" d="M200 134H262"/>
-  <path class="arrow" d="M414 134H476" style="animation-delay:.2s"/>
-  <path class="arrow" d="M628 134H690" style="animation-delay:.4s"/>
-  <path class="arrow" d="M842 134H904" style="animation-delay:.6s"/>
+  <rect class="bg" width="1120" height="270" rx="28"/>
+  <path class="arrow" d="M202 135H260"/>
+  <path class="arrow" d="M414 135H472" style="animation-delay:.2s"/>
+  <path class="arrow" d="M626 135H684" style="animation-delay:.4s"/>
+  <path class="arrow" d="M838 135H896" style="animation-delay:.6s"/>
 
-  <g transform="translate(28 52)">
-    <rect class="card" width="172" height="164" rx="22"/>
-    <circle cx="34" cy="34" r="18" fill="url(#accent)"/><text x="27" y="42" class="num">1</text>
-    <path d="M60 76h52M60 98h78M60 120h42" stroke="#54c7ff" stroke-width="8" stroke-linecap="round"/>
-    <text x="24" y="148" class="head">Repo link</text>
+  <g transform="translate(28 48)">
+    <rect class="card" width="174" height="172" rx="34"/>
+    <circle cx="34" cy="34" r="18" fill="url(#aura)"/><text x="28" y="42" class="num">1</text>
+    <path d="M52 82h58M52 103h76M52 124h42" stroke="#2bd8c4" stroke-width="8" stroke-linecap="round"/>
+    <text x="24" y="151" class="head">Repo link</text>
   </g>
-
-  <g transform="translate(242 52)">
-    <rect class="card" width="172" height="164" rx="22"/>
-    <circle cx="34" cy="34" r="18" fill="url(#accent)"/><text x="27" y="42" class="num">2</text>
-    <rect x="42" y="70" width="88" height="58" rx="10" fill="#0d1524" stroke="rgba(255,255,255,.18)"/>
-    <path d="M56 88h60M56 108h44" stroke="#37ffb2" stroke-width="7" stroke-linecap="round"/>
-    <text x="24" y="148" class="head">One VPS install</text>
+  <g transform="translate(240 48)">
+    <rect class="card" width="174" height="172" rx="34"/>
+    <circle cx="34" cy="34" r="18" fill="url(#aura)"/><text x="28" y="42" class="num">2</text>
+    <path d="M54 82h66M54 106h48" stroke="#f0b95c" stroke-width="9" stroke-linecap="round"/>
+    <circle class="pulse" cx="124" cy="106" r="13" fill="#2bd8c4"/>
+    <text x="24" y="151" class="head">One VPS install</text>
   </g>
-
-  <g transform="translate(456 52)">
-    <rect class="card" width="172" height="164" rx="22"/>
-    <circle cx="34" cy="34" r="18" fill="url(#accent)"/><text x="27" y="42" class="num">3</text>
-    <rect x="58" y="62" width="56" height="78" rx="10" fill="#0d1524" stroke="rgba(255,255,255,.18)"/>
-    <circle class="blink" cx="86" cy="104" r="16" fill="#54c7ff" opacity=".8"/>
-    <text x="24" y="148" class="head">Mobile console</text>
+  <g transform="translate(452 48)">
+    <rect class="card" width="174" height="172" rx="34"/>
+    <circle cx="34" cy="34" r="18" fill="url(#aura)"/><text x="28" y="42" class="num">3</text>
+    <rect x="62" y="62" width="50" height="76" rx="14" fill="rgba(246,242,232,.08)" stroke="rgba(246,242,232,.18)"/>
+    <circle class="pulse" cx="87" cy="101" r="15" fill="#2bd8c4"/>
+    <text x="24" y="151" class="head">Mobile console</text>
   </g>
-
-  <g transform="translate(670 52)">
-    <rect class="card" width="172" height="164" rx="22"/>
-    <circle cx="34" cy="34" r="18" fill="url(#accent)"/><text x="27" y="42" class="num">4</text>
-    <rect x="38" y="72" width="98" height="56" rx="9" fill="#0d1524" stroke="rgba(255,255,255,.18)"/>
-    <path d="M64 142h46M87 128v14" stroke="#ffe082" stroke-width="6" stroke-linecap="round"/>
-    <text x="24" y="148" class="head">Windows bridge</text>
+  <g transform="translate(664 48)">
+    <rect class="card" width="174" height="172" rx="34"/>
+    <circle cx="34" cy="34" r="18" fill="url(#aura)"/><text x="28" y="42" class="num">4</text>
+    <rect x="44" y="74" width="88" height="50" rx="13" fill="rgba(246,242,232,.08)" stroke="rgba(246,242,232,.18)"/>
+    <path d="M66 142h44M88 124v18" stroke="#f0b95c" stroke-width="7" stroke-linecap="round"/>
+    <text x="24" y="151" class="head">Windows bridge</text>
   </g>
-
-  <g transform="translate(884 52)">
-    <rect class="card" width="208" height="164" rx="22"/>
-    <circle cx="34" cy="34" r="18" fill="url(#accent)"/><text x="27" y="42" class="num">5</text>
-    <path class="blink" d="M54 100h100" stroke="url(#accent)" stroke-width="12" stroke-linecap="round"/>
-    <circle cx="54" cy="100" r="18" fill="#0d1524" stroke="#54c7ff" stroke-width="4"/>
-    <circle cx="154" cy="100" r="18" fill="#0d1524" stroke="#37ffb2" stroke-width="4"/>
-    <text x="24" y="148" class="head">One API key</text>
+  <g transform="translate(876 48)">
+    <rect class="card" width="216" height="172" rx="34"/>
+    <circle cx="34" cy="34" r="18" fill="url(#aura)"/><text x="28" y="42" class="num">5</text>
+    <path d="M54 101h108" stroke="url(#auraLine)" stroke-width="13" stroke-linecap="round"/>
+    <circle cx="54" cy="101" r="18" fill="#151a21" stroke="#2bd8c4" stroke-width="4"/>
+    <circle class="pulse" cx="162" cy="101" r="18" fill="#151a21" stroke="#e66d67" stroke-width="4"/>
+    <text x="24" y="151" class="head">One API key</text>
     <text x="24" y="170" class="body">Codex, CLI tools, apps</text>
   </g>
 </svg>

@@ -1,14 +1,14 @@
 # Codex Mobile App - One API to rule them All
 
-![Codex Mobile App animated hero](docs/assets/ticproxy-github-hero.svg)
+![Codex Mobile App AIOS-style animated hero](docs/assets/ticproxy-github-hero.svg)
 
 Self-host your own TicProxy server, Codex Mobile relay, Windows bridge, and OpenAI-compatible `/v1` endpoint from one repo. Install it once on your VPS, connect the Windows PC that owns Codex Desktop, then use one proxy API key across Codex, CLI tools, mobile workflows, and compatible apps.
 
-[![Agent ready install card](docs/assets/agent-install-card.svg)](docs/AGENT_INSTALL.md)
+[![AIOS-style Agent ready install card](docs/assets/agent-install-card.svg)](docs/AGENT_INSTALL.md)
 
 ## Install once, use everywhere
 
-![Install once flow](docs/assets/install-once-flow.svg)
+![AIOS-style install once flow](docs/assets/install-once-flow.svg)
 
 This repo is built for a simple handoff:
 

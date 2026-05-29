@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" role="img" aria-labelledby="title desc">
+  <title id="title">AIOS Of Me logo symbol</title>
+  <desc id="desc">An original abstract A-shaped neural workspace mark for AIOS Of Me.</desc>
+  <defs>
+    <linearGradient id="aura" x1="36" y1="38" x2="220" y2="222" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#2bd8c4"/>
+      <stop offset="0.54" stop-color="#f0b95c"/>
+      <stop offset="1" stop-color="#e66d67"/>
+    </linearGradient>
+    <linearGradient id="ink" x1="52" y1="26" x2="208" y2="238" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#171b21"/>
+      <stop offset="1" stop-color="#0c0f13"/>
+    </linearGradient>
+    <filter id="soft-shadow" x="-30%" y="-30%" width="160%" height="160%" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="#000000" flood-opacity="0.32"/>
+    </filter>
+  </defs>
+  <rect x="24" y="24" width="208" height="208" rx="52" fill="url(#ink)" filter="url(#soft-shadow)"/>
+  <path d="M67 185 111 70c5-14 22-16 29-3l55 118" fill="none" stroke="url(#aura)" stroke-width="19" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M92 137h74" fill="none" stroke="#f6f2e8" stroke-width="15" stroke-linecap="round" opacity="0.94"/>
+  <path d="M122 73 92 137h74l-29-65c-4-9-11-9-15 1Z" fill="#f6f2e8" opacity="0.08"/>
+  <circle cx="198" cy="58" r="12" fill="#f6f2e8"/>
+  <circle cx="199" cy="58" r="22" fill="none" stroke="#2bd8c4" stroke-width="3" opacity="0.32"/>
+  <circle cx="58" cy="198" r="7" fill="#f0b95c"/>
+  <circle cx="206" cy="196" r="6" fill="#e66d67"/>
+</svg>
