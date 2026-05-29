@@ -9,6 +9,7 @@ The user's VPS runs:
 - Codex Chat Mobile web app
 - TicProxy OAuth presets for Codex/ChatGPT, with Gemini CLI and Antigravity slots configurable by env or `providers.json`
 - PC Agent command queue and Codex Desktop thread sync for the Windows bridge
+- Optional Zalo Link bridge for chat/group control of linked Codex threads
 - Mobile Control UI
 - Relay for Windows bridge commands
 - OpenAI-compatible `/v1` TicProxy API

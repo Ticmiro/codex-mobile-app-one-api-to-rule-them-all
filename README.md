@@ -29,6 +29,7 @@ No managed proxy endpoint is required. Each install owns its tokens, account poo
 | `TicProxy /v1` | OpenAI-compatible proxy route across many accounts, providers, models, and quota states. |
 | `Codex Mobile` | Browser/mobile console for Codex thread sync, TicProxy management, OAuth, auth files, quota, logs, and provider info. |
 | `Windows bridge` | Outbound-only local agent that connects the user's Codex Desktop/Codex CLI state to the self-hosted server. |
+| `Zalo Link` | Optional personal Zalo bridge that links a Zalo chat or group to a Codex Desktop thread through the same command queue. |
 | `API ONE KEY` | Bridge action that writes the TicProxy provider into local Codex config so the user can switch once and keep working. |
 | `Agent install docs` | A ready prompt for another AI/server agent: give it the repo link and let it install the VPS side safely. |
 
@@ -55,6 +56,7 @@ flowchart LR
   Phone["Mobile / PWA"] --> Server["User VPS: this repo"]
   Server --> Proxy["TicProxy-compatible /v1 API"]
   Server --> Relay["Command relay"]
+  Zalo["Zalo chat / group"] --> Server
   Bridge["Windows bridge"] --> Server
   Bridge --> Codex["Codex Desktop / Codex CLI"]
   Codex --> Proxy
@@ -66,6 +68,7 @@ flowchart LR
 - `apps/server`: VPS server with static mobile UI, relay endpoints, admin endpoints, OAuth callback, and OpenAI-compatible `/v1`.
 - `apps/mobile-web`: mobile-first product console with Codex Chat Mobile, PC Agent, Auther Platforms, provider setup, OAuth/API-key account login, quota/routing, and install info.
 - `apps/windows-bridge`: Windows-side bridge that connects local Codex Desktop/Codex CLI state to the user's VPS, syncs Desktop thread transcripts from `CODEX_HOME/sessions`, and can run queued `codex.exec` or selected-thread sends from the mobile Agent/Chat tabs.
+- `apps/server/src/zaloBridge.js`: optional Zalo Link bridge for QR login, `/link`, `/threads`, `/use`, `/unlink`, `/status`, plain text forwarding to `codex.thread.send`, and result replies back to Zalo.
 - `scripts/deploy-server-one-shot.sh`: one-command VPS deployment.
 - `scripts/install-windows-bridge.ps1`: one-command Windows bridge setup.
 
@@ -224,7 +227,7 @@ Token roles after install:
 - `Proxy API key`: paste into Codex/Gemini/Antigravity/OpenAI-compatible clients that call `https://codex.example.com/v1`.
 - `Admin token`: for advanced admin API calls such as `/admin/providers` and `/admin/accounts`; the beginner UI keeps this out of the way.
 
-Beginner guide: [`docs/APP_AUTHER_SETUP.md`](docs/APP_AUTHER_SETUP.md). Codex Desktop conversation sync guide: [`docs/CODEX_CHAT_SYNC.md`](docs/CODEX_CHAT_SYNC.md). Full A-Z setup: [`docs/CODEX_MOBILE_DESKTOP_A_TO_Z.md`](docs/CODEX_MOBILE_DESKTOP_A_TO_Z.md).
+Beginner guide: [`docs/APP_AUTHER_SETUP.md`](docs/APP_AUTHER_SETUP.md). Codex Desktop conversation sync guide: [`docs/CODEX_CHAT_SYNC.md`](docs/CODEX_CHAT_SYNC.md). Zalo Link guide: [`docs/ZALO_LINK.md`](docs/ZALO_LINK.md). Full A-Z setup: [`docs/CODEX_MOBILE_DESKTOP_A_TO_Z.md`](docs/CODEX_MOBILE_DESKTOP_A_TO_Z.md).
 
 Recommended first test: open `TicProxy -> OAuth`, choose `Codex / ChatGPT`, then press `Tao link dang nhap`. Open the link on the Windows PC that is running the bridge. A fresh install should create an OpenAI/Codex auth URL immediately, and the bridge should auto-submit the localhost callback after login. If the browser lands on a local callback page and does not close, open `Nhap callback thu cong`, copy the full `localhost` URL with `code=...&state=...`, paste it, and press `Submit`.
 

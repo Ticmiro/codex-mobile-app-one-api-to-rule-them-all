@@ -5,11 +5,14 @@
   "description": "Self-hosted TicProxy gateway, Codex Mobile relay, and Windows bridge for community use.",
   "license": "MIT",
   "scripts": {
-    "check": "node --check apps/server/src/index.js && node --check apps/windows-bridge/src/index.js && node --check apps/mobile-web/public/app.js",
+    "check": "node --check apps/server/src/index.js && node --check apps/server/src/zaloBridge.js && node --check apps/windows-bridge/src/index.js && node --check apps/mobile-web/public/app.js",
     "server:start": "node apps/server/src/index.js",
     "bridge:start": "node apps/windows-bridge/src/index.js"
   },
   "engines": {
     "node": ">=22"
+  },
+  "dependencies": {
+    "zalo-api-final": "^2.1.1"
   }
 }

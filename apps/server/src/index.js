@@ -3,6 +3,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
 const { Readable } = require('node:stream');
+const { createZaloBridge } = require('./zaloBridge');
 
 const PORT = Number(process.env.TICMIRO_PORT || process.env.PORT || 4899);
 const HOST = process.env.TICMIRO_HOST || '0.0.0.0';
@@ -23,6 +24,7 @@ const STATIC_DIR = path.join(__dirname, '..', '..', 'mobile-web', 'public');
 const CODEX_BACKEND_BASE_URL = 'https://chatgpt.com/backend-api/codex';
 const CODEX_CLI_ORIGINATOR = 'codex_cli_rs';
 const CODEX_CLI_USER_AGENT = process.env.TICMIRO_CODEX_USER_AGENT || 'codex_cli_rs/0.133.0 (Windows 11; x86_64) vscode/1.111.0';
+let zaloBridge = null;
 
 function splitList(value) {
   return String(value || '')
@@ -2717,6 +2719,11 @@ async function createMobileCommand(currentState, type, payload) {
     payload: { id: command.id, type: command.type, group: commandGroup(command.type), status: command.status },
   }];
   saveState(next);
+  if (zaloBridge?.afterCommandCreated) {
+    Promise.resolve(zaloBridge.afterCommandCreated(command)).catch((error) => {
+      console.warn(`[zalo] command mirror failed: ${error.message || error}`);
+    });
+  }
   return command;
 }
 
@@ -2776,6 +2783,41 @@ async function mobileApi(req, res, url) {
       runningCommands: commands.filter((command) => (String(command.type || '').startsWith('codex.thread.') || String(command.type || '').startsWith('codex.desktop.')) && ['pending', 'running'].includes(command.status)),
       lastResult: commands.reverse().find((command) => String(command.type || '').startsWith('codex.thread.') || String(command.type || '').startsWith('codex.desktop.')) || null,
     });
+    return;
+  }
+  if (req.method === 'GET' && url.pathname === '/api/zalo') {
+    json(res, 200, await zaloBridge.getStatus({ includeQr: true }));
+    return;
+  }
+  if (req.method === 'POST' && url.pathname === '/api/zalo/login-qr/start') {
+    const payload = await jsonBody(req);
+    json(res, 200, await zaloBridge.startLoginQr(payload));
+    return;
+  }
+  if (req.method === 'POST' && url.pathname === '/api/zalo/listener/start') {
+    json(res, 200, await zaloBridge.startFromSavedCredentials());
+    return;
+  }
+  if (req.method === 'POST' && url.pathname === '/api/zalo/listener/stop') {
+    json(res, 200, await zaloBridge.stopListener());
+    return;
+  }
+  if (req.method === 'POST' && url.pathname === '/api/zalo/logout') {
+    json(res, 200, await zaloBridge.logout());
+    return;
+  }
+  if (req.method === 'POST' && url.pathname === '/api/zalo/setup-code/rotate') {
+    json(res, 200, await zaloBridge.rotateSetupCode());
+    return;
+  }
+  if (req.method === 'POST' && url.pathname === '/api/zalo/config') {
+    const payload = await jsonBody(req);
+    json(res, 200, await zaloBridge.updateConfig(payload));
+    return;
+  }
+  if (req.method === 'POST' && url.pathname === '/api/zalo/default-thread') {
+    const payload = await jsonBody(req);
+    json(res, 200, await zaloBridge.updateConfig({ defaultCodexThreadId: payload.threadId || payload.codexThreadId || '' }));
     return;
   }
   if (req.method === 'GET' && url.pathname === '/api/commands') {
@@ -3585,6 +3627,15 @@ const server = http.createServer(async (req, res) => {
 
 ensureDir(DATA_DIR);
 if (!fs.existsSync(PROVIDERS_PATH)) writeJson(PROVIDERS_PATH, { providers: [], accounts: [], routes: {} });
+zaloBridge = createZaloBridge({
+  dataDir: DATA_DIR,
+  getSnapshot: () => buildCodexSnapshot(state().snapshot),
+  createCommand: (type, payload) => createMobileCommand(state(), type, payload),
+  listCommands: () => state().commands || [],
+});
+zaloBridge.bootstrap().catch((error) => {
+  console.warn(`[zalo] bootstrap failed: ${error.message || error}`);
+});
 server.listen(PORT, HOST, () => {
   console.log(`[server] listening on ${HOST}:${PORT}`);
   console.log(`[server] public base URL ${PUBLIC_BASE_URL}`);

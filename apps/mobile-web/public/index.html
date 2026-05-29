@@ -20,6 +20,10 @@
           <span class="tm-rail-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 18v-4a4 4 0 0 1 4-4h12"/><path d="M20 6v8"/><path d="m16 10 4 4 4-4"/><path d="M4 6h8"/><path d="M4 10h4"/></svg></span>
           <span class="tm-sr-only">TicProxy</span>
         </button>
+        <button class="tm-rail-item" type="button" data-tab="zalo" title="Zalo Link">
+          <span class="tm-rail-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M21 11.5a8.5 8.5 0 0 1-12.5 7.52L3 21l1.98-5.4A8.5 8.5 0 1 1 21 11.5Z"/><path d="M8 10h8"/><path d="M8 14h5"/></svg></span>
+          <span class="tm-sr-only">Zalo Link</span>
+        </button>
         <button class="tm-rail-item" type="button" data-tab="agent" title="Agent PC">
           <span class="tm-rail-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 8V4H8"/><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M9 13h.01"/><path d="M15 13h.01"/><path d="M9 17h6"/></svg></span>
           <span class="tm-sr-only">Agent PC</span>
@@ -60,6 +64,7 @@
             <article class="tm-status-card" id="agentCard"></article>
             <article class="tm-status-card" id="codexCard"></article>
             <article class="tm-status-card" id="ticproxyCard"></article>
+            <article class="tm-status-card" id="zaloCard"></article>
             <article class="tm-status-card" id="residentCard"></article>
           </section>
 
@@ -144,6 +149,64 @@
               </article>
             </div>
             <button id="threadDrawerBackdrop" class="tm-thread-drawer-backdrop" type="button" aria-label="Đóng danh sách phiên" hidden></button>
+          </section>
+
+          <section class="tm-tab" id="tab-zalo">
+            <div class="tm-two-col">
+              <article class="tm-panel">
+                <div class="tm-panel-head">
+                  <div>
+                    <h2>Zalo Link</h2>
+                    <p>QR login, link Zalo chat vào Codex thread</p>
+                  </div>
+                  <div class="tm-action-row inline">
+                    <button id="zaloStatusBtn" type="button">Refresh</button>
+                    <button id="zaloStartQrBtn" class="tm-primary" type="button">QR Login</button>
+                  </div>
+                </div>
+                <div id="zaloStatus" class="tm-mini-list"></div>
+                <div id="zaloQrBox" class="tm-zalo-qr-box"></div>
+                <div class="tm-form-grid">
+                  <label>
+                    <span>Setup code</span>
+                    <input id="zaloSetupCodeInput" readonly>
+                  </label>
+                  <label>
+                    <span>Default Codex thread</span>
+                    <select id="zaloDefaultThreadSelect"></select>
+                  </label>
+                </div>
+                <div class="tm-action-row">
+                  <button id="zaloRotateCodeBtn" type="button">Rotate code</button>
+                  <button id="zaloSaveDefaultThreadBtn" type="button">Set thread</button>
+                </div>
+                <label class="tm-inline-check">
+                  <input id="zaloSyncWebappInput" type="checkbox" checked>
+                  <span>Mirror tin từ Codex Mobile sang Zalo đã link</span>
+                </label>
+                <div class="tm-action-row">
+                  <button id="zaloStartListenerBtn" type="button">Start listener</button>
+                  <button id="zaloStopListenerBtn" type="button">Stop listener</button>
+                  <button id="zaloLogoutBtn" type="button">Logout</button>
+                </div>
+              </article>
+              <article class="tm-panel tm-panel-main">
+                <div class="tm-panel-head">
+                  <div>
+                    <h2>Linked Chats</h2>
+                    <p>/threads · /use · /unlink · /status</p>
+                  </div>
+                </div>
+                <div id="zaloLinks" class="tm-list compact"></div>
+                <div class="tm-panel-head compact">
+                  <div>
+                    <h2>Zalo Events</h2>
+                    <p>Runtime state, không hiển thị cookie</p>
+                  </div>
+                </div>
+                <div id="zaloEvents" class="tm-mini-list"></div>
+              </article>
+            </div>
           </section>
 
           <section class="tm-tab" id="tab-agent">

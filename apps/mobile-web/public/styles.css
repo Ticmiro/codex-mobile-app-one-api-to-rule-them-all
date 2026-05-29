@@ -415,6 +415,40 @@ pre {
   margin-bottom: 10px;
 }
 
+.tm-zalo-qr-box {
+  margin-bottom: 10px;
+}
+
+.tm-zalo-qr-card {
+  display: grid;
+  grid-template-columns: 148px minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+  padding: 10px;
+  border: 1px solid var(--tm-line-soft);
+  border-radius: 6px;
+  background: #202020;
+}
+
+.tm-zalo-qr-card img {
+  width: 148px;
+  height: 148px;
+  border-radius: 4px;
+  background: #fff;
+}
+
+.tm-zalo-qr-card strong,
+.tm-zalo-qr-card small {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.tm-zalo-qr-card small {
+  margin-top: 6px;
+  color: var(--tm-muted);
+  font-size: 12px;
+}
+
 .tm-primary {
   border-color: rgba(55, 148, 255, 0.75);
   background: var(--tm-blue);
@@ -498,7 +532,7 @@ pre {
 
 .tm-status-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 10px;
   margin: 14px 0;
 }
@@ -559,6 +593,8 @@ body[data-active-tab="chat"] .tm-hero,
 body[data-active-tab="chat"] .tm-status-grid,
 body[data-active-tab="ticproxy"] .tm-hero,
 body[data-active-tab="ticproxy"] .tm-status-grid,
+body[data-active-tab="zalo"] .tm-hero,
+body[data-active-tab="zalo"] .tm-status-grid,
 body[data-active-tab="agent"] .tm-hero,
 body[data-active-tab="agent"] .tm-status-grid,
 body[data-active-tab="queue"] .tm-hero,
@@ -1583,6 +1619,15 @@ body[data-active-tab="chat"] #tab-chat.is-active {
   .tm-ticproxy-shortcuts,
   .tm-agent-hub {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .tm-zalo-qr-card {
+    grid-template-columns: 116px minmax(0, 1fr);
+  }
+
+  .tm-zalo-qr-card img {
+    width: 116px;
+    height: 116px;
   }
 
   .tm-commandbar {

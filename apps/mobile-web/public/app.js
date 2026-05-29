@@ -14,6 +14,7 @@ const els = {
   agentCard: document.getElementById('agentCard'),
   codexCard: document.getElementById('codexCard'),
   ticproxyCard: document.getElementById('ticproxyCard'),
+  zaloCard: document.getElementById('zaloCard'),
   residentCard: document.getElementById('residentCard'),
   threads: document.getElementById('threads'),
   commands: document.getElementById('commands'),
@@ -49,6 +50,20 @@ const els = {
   codexThreadFileInput: document.getElementById('codexThreadFileInput'),
   codexThreadAttachBtn: document.getElementById('codexThreadAttachBtn'),
   codexThreadSendBtn: document.getElementById('codexThreadSendBtn'),
+  zaloStatusBtn: document.getElementById('zaloStatusBtn'),
+  zaloStartQrBtn: document.getElementById('zaloStartQrBtn'),
+  zaloStartListenerBtn: document.getElementById('zaloStartListenerBtn'),
+  zaloStopListenerBtn: document.getElementById('zaloStopListenerBtn'),
+  zaloLogoutBtn: document.getElementById('zaloLogoutBtn'),
+  zaloRotateCodeBtn: document.getElementById('zaloRotateCodeBtn'),
+  zaloSaveDefaultThreadBtn: document.getElementById('zaloSaveDefaultThreadBtn'),
+  zaloSyncWebappInput: document.getElementById('zaloSyncWebappInput'),
+  zaloSetupCodeInput: document.getElementById('zaloSetupCodeInput'),
+  zaloDefaultThreadSelect: document.getElementById('zaloDefaultThreadSelect'),
+  zaloStatus: document.getElementById('zaloStatus'),
+  zaloQrBox: document.getElementById('zaloQrBox'),
+  zaloLinks: document.getElementById('zaloLinks'),
+  zaloEvents: document.getElementById('zaloEvents'),
   ticproxyManagementMeta: document.getElementById('ticproxyManagementMeta'),
   ticproxyBasicForm: document.getElementById('ticproxyBasicForm'),
   ticproxyProxyUrlInput: document.getElementById('ticproxyProxyUrlInput'),
@@ -138,6 +153,7 @@ let state = {
   tasks: null,
   ticproxy: null,
   codexChat: null,
+  zalo: null,
   selectedThreadId: '',
   selectedProvider: 'codex',
   ticproxyTab: 'oauth',
@@ -1203,6 +1219,7 @@ function setActiveTab(tab, options = {}) {
     agent: 'Agent PC',
     queue: 'Agent PC / Command Queue',
     ticproxy: 'TicProxy',
+    zalo: 'Zalo Link',
     resident: 'Agent PC / IDE Agent',
     files: 'Agent PC / File Controls',
     tasks: 'Agent PC / Task Controls',
@@ -1237,6 +1254,10 @@ function renderStatus(dashboard) {
   els.agentCard.innerHTML = statusCard('PC Agent', status.agent?.host || status.agent?.id, `seen ${timeAgo(status.agent?.lastSeenAt)} · ${status.pendingCount || 0} pending`, agentOnline);
   els.codexCard.innerHTML = statusCard('Codex', codex.config?.modelProvider || status.codex?.provider, `${codex.config?.model || status.codex?.model || '-'} · ${codex.threads?.length || 0} threads`, Boolean(codex.config?.exists));
   els.ticproxyCard.innerHTML = statusCard('TicProxy', ticproxy.healthy ? 'healthy' : 'attention', `${ticproxy.modelCount || 0} models · ${ticproxy.keyPresent ? 'key present' : 'missing key'}`, Boolean(ticproxy.healthy));
+  if (els.zaloCard) {
+    const zalo = state.zalo || {};
+    els.zaloCard.innerHTML = statusCard('Zalo', zalo.listenerRunning ? 'online' : (zalo.credentialsSaved ? 'saved' : 'not linked'), `${zalo.linkedCount || 0} links · ${zalo.status || 'idle'}`, Boolean(zalo.listenerRunning));
+  }
   els.residentCard.innerHTML = statusCard('Resident', resident.online ? 'online' : 'offline', `${resident.source || '-'} · ${resident.processCount || 0} process`, Boolean(resident.online));
   renderSignals(status, snapshot, tasks);
 }
@@ -1429,6 +1450,62 @@ function renderChat(codexChat = {}, dashboard = state.dashboard) {
   }
   if (shouldStickToBottom) els.chatMessages.scrollTop = els.chatMessages.scrollHeight;
   state.chatStickToBottom = false;
+}
+
+function renderZalo(zalo = {}, codexChat = state.codexChat, dashboard = state.dashboard) {
+  if (!els.zaloStatus) return;
+  const snapshotThreads = dashboard?.snapshot?.codex?.threads || [];
+  const threads = codexChat?.threads?.length ? codexChat.threads : (zalo.threads?.length ? zalo.threads : snapshotThreads);
+  const defaultThreadId = zalo.defaultCodexThreadId || state.selectedThreadId || threads[0]?.id || '';
+  const threadOptions = threads.map((thread) => `
+    <option value="${escapeHtml(thread.id)}">${escapeHtml(thread.title || thread.id)} · ${escapeHtml(thread.model || '-')}</option>
+  `).join('');
+  els.zaloDefaultThreadSelect.innerHTML = threadOptions || '<option value="">Chưa có Codex thread</option>';
+  if (defaultThreadId && threads.some((thread) => thread.id === defaultThreadId)) {
+    els.zaloDefaultThreadSelect.value = defaultThreadId;
+  }
+  els.zaloSetupCodeInput.value = zalo.setupCode || '';
+  els.zaloSyncWebappInput.checked = zalo.config?.syncWebappToZalo !== false;
+
+  const statusLines = [
+    `Login: ${zalo.status || 'idle'}`,
+    `Listener: ${zalo.listenerRunning ? 'online' : 'offline'}`,
+    `Session: ${zalo.credentialsSaved ? 'saved' : 'not saved'}`,
+    `Default thread: ${defaultThreadId || '-'}`,
+    zalo.lastError ? `Error: ${short(zalo.lastError, 220)}` : '',
+  ].filter(Boolean);
+  els.zaloStatus.innerHTML = itemHtml('Zalo bridge', statusLines, zalo.listenerRunning ? 'ok' : (zalo.lastError ? 'bad' : ''));
+
+  if (zalo.qr?.dataUrl) {
+    els.zaloQrBox.innerHTML = `
+      <div class="tm-zalo-qr-card">
+        <img src="${escapeHtml(zalo.qr.dataUrl)}" alt="Zalo QR">
+        <div>
+          <strong>QR đang chờ quét</strong>
+          <small>Hết hạn ${escapeHtml(formatDate(zalo.qr.expiresAt))}</small>
+        </div>
+      </div>
+    `;
+  } else {
+    els.zaloQrBox.innerHTML = itemHtml('QR login', ['Bấm QR Login để tạo mã đăng nhập Zalo personal bridge.']);
+  }
+
+  const links = zalo.links || [];
+  els.zaloLinks.innerHTML = links.map((link) => itemHtml(
+    link.codexThreadTitle || link.codexThreadId || 'Codex thread',
+    [
+      `Codex: ${link.codexThreadId || '-'}`,
+      `Zalo thread: ${link.threadId || '-'} · type ${link.threadType ?? '-'}`,
+      `Updated: ${formatDate(link.updatedAt || link.createdAt)}`,
+      link.lastCommandId ? `Last command: ${link.lastCommandId}` : '',
+    ],
+    'ok',
+  )).join('') || itemHtml('Chưa có Zalo chat được link', ['Sau khi QR login, gửi /link <setup code> từ Zalo rồi /use <thread>.']);
+
+  els.zaloEvents.innerHTML = (zalo.recentEvents || []).map((event) => itemHtml(
+    event.kind || event.type || 'event',
+    [formatDate(event.createdAt || event.at), event.message || ''],
+  )).join('') || itemHtml('No events', ['Zalo bridge chưa ghi nhận sự kiện.']);
 }
 
 function renderCommands(commands = []) {
@@ -1871,22 +1948,25 @@ function renderTasks(tasksPayload, lastTaskResult) {
 
 async function refresh() {
   if (!token) return;
-  const [dashboard, files, tasks, ticproxy, codexChat] = await Promise.all([
+  const [dashboard, files, tasks, ticproxy, codexChat, zalo] = await Promise.all([
     api(`${API}/dashboard`),
     api(`${API}/files`),
     api(`${API}/tasks`),
     api(`${API}/ticproxy`),
     api(`${API}/codex-chat`),
+    api(`${API}/zalo`),
   ]);
   state.dashboard = dashboard;
   state.files = files;
   state.tasks = tasks;
   state.ticproxy = ticproxy;
   state.codexChat = codexChat;
+  state.zalo = zalo;
   const snapshot = dashboard.snapshot || {};
   renderStatus(dashboard);
   renderThreads(snapshot.codex?.threads || []);
   renderChat(codexChat, dashboard);
+  renderZalo(zalo, codexChat, dashboard);
   renderCommands(dashboard.commands || []);
   renderEvents(dashboard.events || []);
   renderModels(snapshot.ticproxy || {});
@@ -2001,9 +2081,34 @@ els.saveTokenBtn.addEventListener('click', () => {
   refresh().then(() => toast('Token saved')).catch((error) => toast(error.message, 'bad'));
 });
 
+async function postZalo(path, payload = {}) {
+  const result = await api(`${API}/zalo${path}`, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+  state.zalo = result;
+  renderZalo(result, state.codexChat, state.dashboard);
+  renderStatus(state.dashboard || { status: {}, snapshot: {} });
+  return result;
+}
+
 els.refreshBtn.addEventListener('click', () => runQueued('snapshot.refresh', {}, { wait: true, polls: 10 }).catch((error) => toast(error.message, 'bad')));
 els.snapshotBtn.addEventListener('click', () => runQueued('snapshot.refresh').catch((error) => toast(error.message, 'bad')));
 els.ticproxyStatusBtn.addEventListener('click', () => runQueued('ticproxy.management.refresh', {}, { wait: true, group: 'ticproxy' }).catch((error) => toast(error.message, 'bad')));
+els.zaloStatusBtn?.addEventListener('click', () => refresh().catch((error) => toast(error.message, 'bad')));
+els.zaloStartQrBtn?.addEventListener('click', () => postZalo('/login-qr/start').then(() => toast('Zalo QR login started', 'ok')).catch((error) => toast(error.message, 'bad')));
+els.zaloStartListenerBtn?.addEventListener('click', () => postZalo('/listener/start').then(() => toast('Zalo listener started', 'ok')).catch((error) => toast(error.message, 'bad')));
+els.zaloStopListenerBtn?.addEventListener('click', () => postZalo('/listener/stop').then(() => toast('Zalo listener stopped', 'ok')).catch((error) => toast(error.message, 'bad')));
+els.zaloLogoutBtn?.addEventListener('click', () => postZalo('/logout').then(() => toast('Zalo logged out', 'ok')).catch((error) => toast(error.message, 'bad')));
+els.zaloRotateCodeBtn?.addEventListener('click', () => postZalo('/setup-code/rotate').then(() => toast('Setup code rotated', 'ok')).catch((error) => toast(error.message, 'bad')));
+els.zaloSaveDefaultThreadBtn?.addEventListener('click', () => postZalo('/config', {
+  defaultCodexThreadId: els.zaloDefaultThreadSelect.value,
+  syncWebappToZalo: els.zaloSyncWebappInput.checked,
+}).then(() => toast('Zalo Link config saved', 'ok')).catch((error) => toast(error.message, 'bad')));
+els.zaloSyncWebappInput?.addEventListener('change', () => postZalo('/config', {
+  defaultCodexThreadId: els.zaloDefaultThreadSelect.value,
+  syncWebappToZalo: els.zaloSyncWebappInput.checked,
+}).catch((error) => toast(error.message, 'bad')));
 async function runApiOneKeyConfigure() {
   if (els.ticproxyApiOneKeyStatus) {
     els.ticproxyApiOneKeyStatus.textContent = 'Đang gửi yêu cầu API ONE KEY tới Windows bridge...';
@@ -2292,7 +2397,7 @@ els.codexExecBtn.addEventListener('click', () => {
 });
 
 const initialTab = searchParams.get('tab');
-if (['chat', 'ticproxy', 'agent', 'queue', 'resident', 'files', 'tasks'].includes(initialTab)) {
+if (['chat', 'ticproxy', 'zalo', 'agent', 'queue', 'resident', 'files', 'tasks'].includes(initialTab)) {
   setActiveTab(initialTab, { scroll: false });
   if (initialTab === 'ticproxy') selectTicProxyTab(searchParams.get('ticproxyTab') || state.ticproxyTab, { scroll: false });
 } else {
