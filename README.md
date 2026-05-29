@@ -1,18 +1,52 @@
 # Codex Mobile App - One API to rule them All
 
-Open-source self-host package for users who want their own TicProxy server, Codex Mobile relay, and Windows bridge.
+![Codex Mobile App animated hero](docs/assets/ticproxy-github-hero.svg)
 
-The intended product flow is:
+Self-host your own TicProxy server, Codex Mobile relay, Windows bridge, and OpenAI-compatible `/v1` endpoint from one repo. Install it once on your VPS, connect the Windows PC that owns Codex Desktop, then use one proxy API key across Codex, CLI tools, mobile workflows, and compatible apps.
 
-1. User deploys this repo to their own VPS/domain.
-2. Server exposes a TicProxy-compatible `/v1` API and Mobile Control UI.
-3. User installs the Windows bridge on the PC that runs Codex Desktop.
-4. User opens the built-in Auther Console, adds providers, and logs accounts into their own server.
-5. Codex uses one API key from the user's server, while the server routes across many accounts/models.
+[![Agent ready install card](docs/assets/agent-install-card.svg)](docs/AGENT_INSTALL.md)
 
-No managed proxy endpoint is required; each install provides its own management and routing layer.
+## Install once, use everywhere
 
-Current login status: OAuth URL generation is built in for `Codex / ChatGPT`, using the CLI-style local callback URL and PKCE. The Windows bridge includes a local callback relay, so when the login link is opened on the PC running the bridge, the final localhost callback is submitted back to the VPS automatically. `Gemini CLI` and `Antigravity` presets are present too, but their Google OAuth client values must be supplied through environment variables or `data/providers.json` because GitHub push protection blocks shipping those client credentials in a public repo. Custom providers can still use the generic Authorization Code + PKCE adapter.
+![Install once flow](docs/assets/install-once-flow.svg)
+
+This repo is built for a simple handoff:
+
+1. Point a domain to your VPS.
+2. Run the one-shot server installer.
+3. Open the mobile console with the printed mobile token.
+4. Install the Windows bridge on the PC running Codex Desktop.
+5. Add OAuth/API accounts in TicProxy.
+6. Press `API ONE KEY` to configure Codex Desktop through the bridge.
+7. Use the same `/v1` base URL and proxy API key from any supported client.
+
+No managed proxy endpoint is required. Each install owns its tokens, account pool, quota view, routing rules, and Codex Desktop bridge.
+
+## What you get
+
+| Surface | What it does |
+| --- | --- |
+| `TicProxy /v1` | OpenAI-compatible proxy route across many accounts, providers, models, and quota states. |
+| `Codex Mobile` | Browser/mobile console for Codex thread sync, TicProxy management, OAuth, auth files, quota, logs, and provider info. |
+| `Windows bridge` | Outbound-only local agent that connects the user's Codex Desktop/Codex CLI state to the self-hosted server. |
+| `API ONE KEY` | Bridge action that writes the TicProxy provider into local Codex config so the user can switch once and keep working. |
+| `Agent install docs` | A ready prompt for another AI/server agent: give it the repo link and let it install the VPS side safely. |
+
+## Agent-ready server handoff
+
+If another agent will install the server for you, send only this repo link and the prompt in [`docs/AGENT_INSTALL.md`](docs/AGENT_INSTALL.md):
+
+```text
+https://github.com/Ticmiro/codex-mobile-app-one-api-to-rule-them-all
+```
+
+The agent prompt tells it to install once, keep secrets private, verify `/health`, preserve server data, and hand back the Mobile URL, Windows bridge token, Proxy API key, and update command.
+
+## Login and provider status
+
+OAuth URL generation is built in for `Codex / ChatGPT`, using the CLI-style local callback URL and PKCE. The Windows bridge includes a local callback relay, so when the login link is opened on the PC running the bridge, the final localhost callback is submitted back to the VPS automatically.
+
+`Gemini CLI` and `Antigravity` presets are present too, but their Google OAuth client values must be supplied through environment variables or `data/providers.json` because GitHub push protection blocks shipping those client credentials in a public repo. Custom providers can still use the generic Authorization Code + PKCE adapter.
 
 ## Architecture
 

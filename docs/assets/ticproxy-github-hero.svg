@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="420" viewBox="0 0 1280 420" role="img" aria-labelledby="title desc">
+  <title id="title">Codex Mobile App and TicProxy hero</title>
+  <desc id="desc">Animated GitHub banner showing one install, one mobile console, one proxy key, and one Windows bridge.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b1020"/>
+      <stop offset="0.54" stop-color="#101a2f"/>
+      <stop offset="1" stop-color="#0f241f"/>
+    </linearGradient>
+    <linearGradient id="blue" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#54c7ff"/>
+      <stop offset="1" stop-color="#37ffb2"/>
+    </linearGradient>
+    <linearGradient id="warm" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffe082"/>
+      <stop offset="1" stop-color="#ff8a65"/>
+    </linearGradient>
+    <filter id="softGlow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="12" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <style>
+      .title { font: 800 58px Arial, Helvetica, sans-serif; fill: #f7fbff; letter-spacing: 0; }
+      .subtitle { font: 600 24px Arial, Helvetica, sans-serif; fill: #b8c8d8; letter-spacing: 0; }
+      .label { font: 800 18px Arial, Helvetica, sans-serif; fill: #f7fbff; letter-spacing: 0; }
+      .tiny { font: 700 13px Arial, Helvetica, sans-serif; fill: #9db1c4; letter-spacing: 0; }
+      .code { font: 700 15px Consolas, 'Cascadia Mono', monospace; fill: #dff8ff; letter-spacing: 0; }
+      .card { fill: rgba(255,255,255,.075); stroke: rgba(255,255,255,.18); stroke-width: 1.4; }
+      .line { stroke: url(#blue); stroke-width: 4; stroke-linecap: round; stroke-dasharray: 18 16; filter: url(#softGlow); }
+      .pulse { animation: pulse 2.7s ease-in-out infinite; transform-origin: center; }
+      .float { animation: float 4.6s ease-in-out infinite; }
+      .float2 { animation: float 5.2s ease-in-out infinite reverse; }
+      .dash { animation: dash 7s linear infinite; }
+      @keyframes pulse { 0%, 100% { opacity: .7; transform: scale(1); } 50% { opacity: 1; transform: scale(1.045); } }
+      @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+      @keyframes dash { to { stroke-dashoffset: -220; } }
+    </style>
+  </defs>
+
+  <rect width="1280" height="420" rx="34" fill="url(#bg)"/>
+  <path d="M92 342C210 270 270 356 390 300C518 240 508 120 660 132C804 144 812 260 948 232C1084 204 1110 98 1216 130" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="3"/>
+  <circle class="pulse" cx="1100" cy="96" r="62" fill="rgba(55,255,178,.11)"/>
+  <circle class="pulse" cx="228" cy="316" r="86" fill="rgba(84,199,255,.1)" style="animation-delay:.65s"/>
+
+  <g transform="translate(72 72)">
+    <rect x="0" y="0" width="610" height="255" rx="24" fill="rgba(0,0,0,.22)" stroke="rgba(255,255,255,.12)"/>
+    <text x="34" y="66" class="title">Codex Mobile App</text>
+    <text x="34" y="112" class="subtitle">One API to rule them all</text>
+    <text x="34" y="156" class="code">curl .../deploy-server-one-shot.sh | sh</text>
+    <g transform="translate(34 188)">
+      <rect width="154" height="38" rx="19" fill="rgba(84,199,255,.16)" stroke="rgba(84,199,255,.5)"/>
+      <text x="20" y="25" class="tiny" fill="#dff8ff">one VPS install</text>
+      <rect x="170" width="178" height="38" rx="19" fill="rgba(55,255,178,.14)" stroke="rgba(55,255,178,.48)"/>
+      <text x="190" y="25" class="tiny" fill="#defcef">one proxy API key</text>
+      <rect x="364" width="158" height="38" rx="19" fill="rgba(255,224,130,.14)" stroke="rgba(255,224,130,.45)"/>
+      <text x="384" y="25" class="tiny" fill="#fff2c7">agent ready</text>
+    </g>
+  </g>
+
+  <g transform="translate(766 78)">
+    <path class="line dash" d="M70 96H208"/>
+    <path class="line dash" d="M248 96H386" style="animation-delay:.35s"/>
+
+    <g class="float">
+      <rect class="card" x="0" y="36" width="106" height="120" rx="22"/>
+      <rect x="25" y="52" width="56" height="84" rx="9" fill="#0c1423" stroke="rgba(255,255,255,.22)"/>
+      <circle cx="53" cy="146" r="4" fill="#54c7ff"/>
+      <text x="13" y="186" class="label">Mobile UI</text>
+    </g>
+
+    <g class="float2" transform="translate(176 0)">
+      <rect class="card" x="0" y="18" width="140" height="156" rx="24"/>
+      <path d="M32 75h76M32 102h54M32 128h68" stroke="url(#blue)" stroke-width="8" stroke-linecap="round"/>
+      <circle cx="104" cy="50" r="14" fill="url(#warm)" filter="url(#softGlow)"/>
+      <text x="21" y="205" class="label">TicProxy</text>
+    </g>
+
+    <g class="float" transform="translate(380 0)" style="animation-delay:.4s">
+      <rect class="card" x="0" y="50" width="132" height="88" rx="16"/>
+      <rect x="22" y="68" width="88" height="52" rx="7" fill="#0c1423" stroke="rgba(255,255,255,.2)"/>
+      <path d="M45 152h44M66 138v14" stroke="#54c7ff" stroke-width="6" stroke-linecap="round"/>
+      <text x="-4" y="186" class="label">Windows bridge</text>
+    </g>
+
+    <g transform="translate(82 258)">
+      <rect x="0" y="0" width="360" height="48" rx="14" fill="rgba(0,0,0,.25)" stroke="rgba(255,255,255,.13)"/>
+      <circle class="pulse" cx="28" cy="24" r="7" fill="#37ffb2"/>
+      <text x="48" y="30" class="code">/v1 routes many accounts and models</text>
+    </g>
+  </g>
+</svg>

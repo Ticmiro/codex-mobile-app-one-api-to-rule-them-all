@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="170" viewBox="0 0 900 170" role="img" aria-labelledby="title desc">
+  <title id="title">Agent ready install card</title>
+  <desc id="desc">A compact card saying paste one repo link to an agent and let it install TicProxy on your server.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#111827"/>
+      <stop offset="1" stop-color="#10281f"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#54c7ff"/>
+      <stop offset="1" stop-color="#37ffb2"/>
+    </linearGradient>
+    <style>
+      .title { font: 900 32px Arial, Helvetica, sans-serif; fill: #f7fbff; letter-spacing: 0; }
+      .body { font: 650 18px Arial, Helvetica, sans-serif; fill: #b8c8d8; letter-spacing: 0; }
+      .code { font: 800 16px Consolas, 'Cascadia Mono', monospace; fill: #e7fbff; letter-spacing: 0; }
+      .spark { animation: spark 2.2s ease-in-out infinite; transform-origin: center; }
+      @keyframes spark { 0%,100% { opacity:.55; transform: scale(.94); } 50% { opacity:1; transform: scale(1.08); } }
+    </style>
+  </defs>
+  <rect width="900" height="170" rx="24" fill="url(#bg)" stroke="rgba(255,255,255,.16)"/>
+  <g transform="translate(38 34)">
+    <rect width="104" height="104" rx="24" fill="rgba(84,199,255,.12)" stroke="rgba(84,199,255,.44)"/>
+    <path d="M34 34h36M34 52h52M34 70h28" stroke="url(#accent)" stroke-width="8" stroke-linecap="round"/>
+    <circle class="spark" cx="76" cy="73" r="15" fill="#37ffb2"/>
+  </g>
+  <text x="174" y="58" class="title">Give your Agent one link. Let it install the server.</text>
+  <text x="174" y="92" class="body">This repo includes the VPS deploy script, Windows bridge, mobile UI, TicProxy /v1 API, and repair docs.</text>
+  <rect x="174" y="112" width="656" height="34" rx="17" fill="rgba(0,0,0,.25)" stroke="rgba(255,255,255,.12)"/>
+  <text x="194" y="135" class="code">https://github.com/Ticmiro/codex-mobile-app-one-api-to-rule-them-all</text>
+</svg>

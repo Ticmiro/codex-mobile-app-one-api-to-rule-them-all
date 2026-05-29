@@ -49,7 +49,7 @@ docker compose up -d --build
 
 The one-shot script also reuses token values from the existing `.env` file when you rerun it.
 
-See `docs/DOMAIN_DNS_GUIDE.md` when installing for a non-technical user or when guiding an AI/vibe-coding assistant through the setup.
+See `docs/DOMAIN_DNS_GUIDE.md` when installing for a non-technical user. If an AI/server agent will do the VPS work for you, give it `docs/AGENT_INSTALL.md` and the repo link.
 
 ## Data files
 
