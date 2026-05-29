@@ -338,7 +338,26 @@ function accountIdFromObject(...sources) {
   return '';
 }
 
+function accountLookupKeys(account = {}) {
+  account = account && typeof account === 'object' ? account : {};
+  return [
+    account.id,
+    account.accountId,
+    account.account_id,
+    account.profile?.accountId,
+    account.profile?.account_id,
+    account.providerSpecificData?.chatgptAccountId,
+    account.providerSpecificData?.chatgpt_account_id,
+    account.provider_specific_data?.chatgptAccountId,
+    account.provider_specific_data?.chatgpt_account_id,
+    accountIdFromObject(account.providerSpecificData, account.provider_specific_data, account.profile, account),
+    accountEmail(account),
+  ].map((value) => String(value || '').trim()).filter(Boolean);
+}
+
 function accountEmail(account = {}, row = {}) {
+  account = account && typeof account === 'object' ? account : {};
+  row = row && typeof row === 'object' ? row : {};
   return firstString(
     emailFromObject(account.profile, account.providerSpecificData, account.provider_specific_data, account, row),
     emailFromText(row.accountEmail),
@@ -359,6 +378,8 @@ function accountEmail(account = {}, row = {}) {
 }
 
 function accountDisplayName(account = {}, row = {}) {
+  account = account && typeof account === 'object' ? account : {};
+  row = row && typeof row === 'object' ? row : {};
   const email = accountEmail(account, row);
   return firstString(
     email,
@@ -1323,7 +1344,10 @@ function usageRows(currentState = state()) {
 }
 
 function authFileRows(config, currentState = state()) {
-  const accountsById = new Map((config.accounts || []).map((account) => [account.id, account]));
+  const accountsById = new Map();
+  for (const account of config.accounts || []) {
+    for (const key of accountLookupKeys(account)) accountsById.set(key, account);
+  }
   const files = listAuthFiles().map((file, index) => {
     const account = accountsById.get(file.accountId);
     const email = firstString(file.email, accountEmail(account, file));
@@ -2142,8 +2166,13 @@ function authFileNameForServer(item = {}) {
   return item.name || item.filename || item.file || item.id || item.accountId || item.account || item.email || '';
 }
 
+function authRowQuotaKey(item = {}) {
+  return String(item.name || item.filename || item.file || item.id || item.accountId || item.account_id || item.email || item.account || '').trim();
+}
+
 function authTargetValues(item = {}) {
   return [
+    authRowQuotaKey(item),
     authFileNameForServer(item),
     item.name,
     item.filename,
@@ -2177,12 +2206,13 @@ function matchingAuthFiles(config, currentState, target) {
 
 function authTargetAccount(config, row, target) {
   if (!row && !target) return null;
+  const wanted = String(target || '').trim();
   return (config.accounts || []).find((account) => (
-    account.id === row?.accountId
-    || account.id === row?.id
-    || account.id === target
-    || account.profile?.email === target
-    || account.label === target
+    accountLookupKeys(account).some((key) => key === row?.accountId || key === row?.id || key === wanted)
+    || accountEmail(account) === wanted
+    || account.profile?.email === wanted
+    || account.label === wanted
+    || row?.email && accountEmail(account) === row.email
   )) || null;
 }
 
@@ -2364,19 +2394,25 @@ async function quotaProbeHttp(config, provider, account, row) {
 }
 
 async function quotaProbeResult(config, currentState, name) {
-  const authRows = authFileRows(config, currentState);
-  const row = authRows.find((item) => authFileNameForServer(item) === name || item.accountId === name || item.name === name);
+  const row = resolveAuthRow(config, currentState, name);
   if (!row) throw httpError(404, `Auth/account ${name} was not found.`);
-  const account = (config.accounts || []).find((item) => item.id === row.accountId);
+  const account = authTargetAccount(config, row, name);
   const usage = account ? publicUsageBucket(currentState.usage?.accounts?.[account.id]) : row.usage;
   const providerId = row.providerId || row.provider || account?.providerId || 'auth-file';
   const provider = account ? config.providers.find((item) => item.id === account.providerId) : null;
+  const quotaKey = authRowQuotaKey(row);
+  const displayName = accountDisplayName(account, row);
+  const email = accountEmail(account, row);
   const baseResult = {
     ok: true,
-    name: authFileNameForServer(row),
-    displayName: accountDisplayName(account, row),
-    accountLabel: accountDisplayName(account, row),
-    accountEmail: accountEmail(account, row),
+    name: quotaKey,
+    quotaKey,
+    target: name,
+    accountId: row.accountId || account?.id || '',
+    displayName,
+    accountLabel: displayName,
+    accountEmail: email,
+    email,
     provider: providerId,
     checkedAt: now(),
     quota: account?.quota || row.quota || {},

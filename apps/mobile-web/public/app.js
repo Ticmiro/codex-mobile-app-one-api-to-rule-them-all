@@ -716,6 +716,10 @@ function authFileName(item) {
   return String(item?.name || item?.filename || item?.file || item?.id || item?.account || item?.email || '');
 }
 
+function authQuotaKey(item) {
+  return String(item?.quotaKey || item?.quota_key || item?.name || item?.filename || item?.file || item?.id || item?.accountId || item?.account_id || item?.email || item?.account || '');
+}
+
 function emailFromText(value) {
   const source = String(value || '').trim();
   const variants = [
@@ -794,6 +798,56 @@ function authDisplayName(item, result = null) {
 
 function authIndex(item) {
   return String(item?.auth_index ?? item?.authIndex ?? item?.auth_id ?? item?.authId ?? '').trim();
+}
+
+function authTargetValues(item = {}) {
+  return [
+    authQuotaKey(item),
+    authFileName(item),
+    item?.name,
+    item?.filename,
+    item?.file,
+    item?.id,
+    item?.accountId,
+    item?.account_id,
+    item?.accountEmail,
+    item?.account_email,
+    item?.email,
+    item?.label,
+    item?.displayName,
+    item?.display_name,
+    item?.account,
+  ].map((value) => String(value || '').trim()).filter(Boolean);
+}
+
+function quotaResultKeys(item = {}, result = {}) {
+  return [...new Set([
+    ...authTargetValues(item),
+    result?.quotaKey,
+    result?.quota_key,
+    result?.name,
+    result?.target,
+    result?.accountId,
+    result?.account_id,
+    result?.accountEmail,
+    result?.email,
+    result?.displayName,
+    result?.accountLabel,
+  ].map((value) => String(value || '').trim()).filter(Boolean))];
+}
+
+function rememberQuotaResult(result, item = {}) {
+  if (!result || typeof result !== 'object') return;
+  for (const key of quotaResultKeys(item, result)) {
+    state.lastQuotaResults[key] = result;
+  }
+}
+
+function quotaResultForItem(item) {
+  for (const key of quotaResultKeys(item)) {
+    if (state.lastQuotaResults[key]) return state.lastQuotaResults[key];
+  }
+  return null;
 }
 
 function authQuotaMeta(item, result = null, provider = '') {
@@ -1672,12 +1726,12 @@ function renderTicProxyOauth(management, lastResult) {
 
 function renderTicProxyQuota(management, lastResult) {
   if (lastResult?.type === 'ticproxy.quota.usageQueue') state.lastUsageQueue = lastResult.result?.rows || [];
-  if (lastResult?.type === 'ticproxy.quota.probe' && lastResult.result?.name) {
-    state.lastQuotaResults[lastResult.result.name] = lastResult.result;
+  if (lastResult?.type === 'ticproxy.quota.probe') {
+    rememberQuotaResult(lastResult.result);
   }
   if (lastResult?.type === 'ticproxy.quota.probeAll' && Array.isArray(lastResult.result?.results)) {
     for (const item of lastResult.result.results) {
-      if (item?.name) state.lastQuotaResults[item.name] = item;
+      rememberQuotaResult(item);
     }
   }
   els.ticproxyUsageQueue.innerHTML = (state.lastUsageQueue || []).map((row) => itemHtml(
@@ -1689,9 +1743,9 @@ function renderTicProxyQuota(management, lastResult) {
     [`requests ${row.requests ?? '-'} · tokens ${row.tokens ?? '-'}`, formatDate(row.lastUsed)],
   )).join('') || itemHtml('No API key usage', ['Bật usage statistics nếu cần.']);
   els.ticproxyQuotaCards.innerHTML = (management.authFiles || []).map((item) => {
-    const name = authFileName(item);
+    const name = authQuotaKey(item);
     const provider = quotaProvider(item);
-    const result = state.lastQuotaResults[name];
+    const result = quotaResultForItem(item);
     const displayName = authDisplayName(item, result);
     const rows = buildQuotaRows(result?.provider || provider, result);
     return `
@@ -1917,7 +1971,8 @@ function currentTicProxyBasicPayload() {
 
 function selectedAuthFileByName(name) {
   const files = ticproxyManagement().authFiles || [];
-  return files.find((item) => (item.name || item.filename || item.file || item.id || item.account || item.email || '') === name) || null;
+  const wanted = String(name || '').trim();
+  return files.find((item) => authTargetValues(item).includes(wanted)) || null;
 }
 
 document.querySelectorAll('.tm-rail-item').forEach((button) => {
